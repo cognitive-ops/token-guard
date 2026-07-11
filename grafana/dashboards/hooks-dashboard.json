@@ -794,6 +794,42 @@
           "refId": "A"
         }
       ]
+    },
+    {
+      "id": 20,
+      "type": "logs",
+      "title": "Recent prompts (raw text, via hooks)",
+      "description": "Full prompt text logged directly by hooks/log-prompt.sh on every UserPromptSubmit — no OTEL_LOG_USER_PROMPTS opt-in needed. Stores raw prompt content in Loki permanently.",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "{service_name=\"claude-code-hooks\", event=\"prompt\"} | json | line_format \"[{{.session_id}}] {{.cwd}}: {{.prompt}}\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ]
     }
   ]
 }

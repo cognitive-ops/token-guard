@@ -1945,6 +1945,42 @@
           }
         }
       ]
+    },
+    {
+      "id": 200,
+      "type": "logs",
+      "title": "Recent prompts (raw text)",
+      "description": "Full prompt text, only present when a developer's session has OTEL_LOG_USER_PROMPTS=1 set (opt-in; off by default). Hooks-based prompt counts elsewhere on this dashboard never carry text, by design.",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 138
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "{service_name=\"claude-code\"} | event_name = \"user_prompt\" | line_format \"{{.user_email}} [{{.session_id}}]: {{.prompt}}\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ]
     }
   ]
 }

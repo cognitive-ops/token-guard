@@ -118,6 +118,8 @@ services:
   loki:
     image: grafana/loki:3.7.1
     container_name: loki
+    ports:
+      - "3100:3100"   # exposed so Claude Code hooks (running on the host) can push events
     volumes:
       - ./loki-config.yaml:/etc/loki/local-config.yaml
       - loki_data:/loki
