@@ -171,7 +171,7 @@ services:
       - ./grafana/dashboards:/var/lib/grafana/dashboards
       # Token Guard logo for the in-dashboard header text panels (served at /public/img/).
       # The favicon + nav/login logo are baked into the image (grafana/Dockerfile).
-      - ./scopic-logo.webp:/usr/share/grafana/public/img/scopic-logo.webp:ro
+      - ./token-guard-logo.png:/usr/share/grafana/public/img/token-guard-logo.png:ro
       - ./scopic-icon.png:/usr/share/grafana/public/img/scopic-icon.png:ro
     depends_on:
       - prometheus

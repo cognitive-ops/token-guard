@@ -7,6 +7,6 @@ export { auth as middleware } from "@/auth";
  */
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|scopic-logo.webp|scopic-icon.png).*)",
+    "/((?!_next/static|_next/image|favicon.ico|token-guard-logo.png|scopic-icon.png).*)",
   ],
 };

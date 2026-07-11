@@ -29,7 +29,7 @@
       },
       "options": {
         "mode": "html",
-        "content": "<div style=\"display:flex;align-items:center;gap:18px;padding:14px 6px 10px;border-bottom:3px solid #017AFF;\"><img src=\"/public/img/scopic-logo.webp\" height=\"40\" alt=\"Token Guard\"/><div><div style=\"color:#017AFF;font-size:26px;font-weight:800;letter-spacing:.2px;\">AI Usage Analytics</div><div style=\"color:#8a93a2;font-size:14px;margin-top:2px;\">Pick a dashboard to open</div></div></div>"
+        "content": "<div style=\"display:flex;align-items:center;gap:18px;padding:14px 6px 10px;border-bottom:3px solid #017AFF;\"><img src=\"/public/img/token-guard-logo.png\" height=\"40\" alt=\"Token Guard\"/><div><div style=\"color:#017AFF;font-size:26px;font-weight:800;letter-spacing:.2px;\">AI Usage Analytics</div><div style=\"color:#8a93a2;font-size:14px;margin-top:2px;\">Pick a dashboard to open</div></div></div>"
       }
     },
     {

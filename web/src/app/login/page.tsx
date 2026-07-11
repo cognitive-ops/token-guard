@@ -46,10 +46,10 @@ export default async function LoginPage({
       <div className="panel w-full max-w-sm p-8">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <Image
-            src="/scopic-logo.webp"
+            src="/token-guard-logo.png"
             alt="Token Guard"
-            width={160}
-            height={57}
+            width={219}
+            height={60}
             priority
             unoptimized
             className="h-9 w-auto"
