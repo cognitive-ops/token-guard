@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Native git post-commit hook — best-effort commit metrics → Loki.
+#
+# WHY: the Claude Code PostToolUse hook only sees commits made *through Claude*.
+# This native hook fires on EVERY commit (terminal, IDE, Claude) and tags each as
+# AI-assisted vs human using the CLAUDECODE env var Claude Code exports to
+# subprocesses — giving AI-vs-human commit attribution that OTEL can't.
+#
+# SAFE BY DESIGN: post-commit runs AFTER the commit and git ignores its exit code,
+# so this can NEVER block or fail a developer's commit. Network push is best-effort.
+# Self-contained (only git/jq/curl) so it works via symlink, copy, core.hooksPath,
+# or a git template dir.
+#
+# Env: CLAUDE_HOOK_LOKI_URL (default http://localhost:3100), CLAUDE_HOOK_LOKI_AUTH,
+#      CLAUDE_HOOK_SYNC (1 = reliable/blocking-up-to-3s), CLAUDE_HOOK_DRY_RUN (1 = print).
+{
+  command -v jq >/dev/null 2>&1 || exit 0
+  command -v curl >/dev/null 2>&1 || exit 0
+
+  url="${CLAUDE_HOOK_LOKI_URL:-http://localhost:3100}"
+  sha="$(git rev-parse HEAD 2>/dev/null)"; [ -z "$sha" ] && exit 0
+  author="$(git log -1 --format='%ae' 2>/dev/null)"
+  branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+  repo="$(basename "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null)"
+  # total lines added/deleted and file count for this commit
+  # shellcheck disable=SC2046  # intentional: split awk's "added deleted files" into $1 $2 $3
+  set -- $(git show --numstat --format= "$sha" 2>/dev/null | awk '{a+=$1;d+=$2;f++} END{print a+0,d+0,f+0}')
+  added="${1:-0}"; deleted="${2:-0}"; files="${3:-0}"
+
+  ai="false"; [ -n "${CLAUDECODE:-}" ] && ai="true"        # AI-assisted attribution
+  sid="${CLAUDE_CODE_SESSION_ID:-}"                         # links AI commits to a session
+
+  line="$(jq -nc --arg sha "$sha" --arg a "$author" --arg b "$branch" --arg repo "$repo" \
+     --arg sid "$sid" --arg ai "$ai" \
+     --argjson add "$added" --argjson del "$deleted" --argjson files "$files" \
+     '{commit_sha:$sha, author:$a, branch:$b, repo:$repo, session_id:$sid,
+       ai_assisted:($ai=="true"), lines_added:$add, lines_deleted:$del, files:$files}' 2>/dev/null)"
+  [ -z "$line" ] && exit 0
+
+  ts="$(date +%s%N 2>/dev/null)"; case "$ts" in *[!0-9]*|"") ts="$(date +%s)000000000" ;; esac
+  payload="$(jq -nc --arg ts "$ts" --arg line "$line" \
+     '{streams:[{stream:{service_name:"claude-code-hooks",event:"git_commit"},values:[[$ts,$line]]}]}' 2>/dev/null)"
+  [ -z "$payload" ] && exit 0
+
+  if [ "${CLAUDE_HOOK_DRY_RUN:-0}" = "1" ]; then printf '%s\n' "$payload"; exit 0; fi
+
+  auth=(); [ -n "${CLAUDE_HOOK_LOKI_AUTH:-}" ] && auth=(-H "Authorization: ${CLAUDE_HOOK_LOKI_AUTH}")
+  if [ "${CLAUDE_HOOK_SYNC:-0}" = "1" ]; then
+    curl -sS --max-time 3 -H "Content-Type: application/json" "${auth[@]}" \
+      -X POST "$url/loki/api/v1/push" --data-binary "$payload" >/dev/null 2>&1
+  else
+    ( setsid curl -sS --max-time 3 -H "Content-Type: application/json" "${auth[@]}" \
+        -X POST "$url/loki/api/v1/push" --data-binary "$payload" >/dev/null 2>&1 & ) >/dev/null 2>&1
+  fi
+} 2>/dev/null   # suppress stderr only; stdout stays clean (no leaks) so DRY_RUN can print
+exit 0

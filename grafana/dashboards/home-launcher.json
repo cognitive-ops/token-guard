@@ -1,0 +1,51 @@
+{
+  "uid": "scopic-home",
+  "title": "Scopic AI Usage Analytics \u2014 Home",
+  "tags": [
+    "home",
+    "launcher"
+  ],
+  "editable": true,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "",
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "text",
+      "id": 1,
+      "transparent": true,
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;align-items:center;gap:18px;padding:14px 6px 10px;border-bottom:3px solid #017AFF;\"><img src=\"/public/img/scopic-logo.webp\" height=\"40\" alt=\"Scopic\"/><div><div style=\"color:#017AFF;font-size:26px;font-weight:800;letter-spacing:.2px;\">AI Usage Analytics</div><div style=\"color:#8a93a2;font-size:14px;margin-top:2px;\">Pick a dashboard to open</div></div></div>"
+      }
+    },
+    {
+      "type": "text",
+      "id": 2,
+      "transparent": true,
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "options": {
+        "mode": "html",
+        "content": "<style>.sch{color:#8a93a2;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin:6px 4px 10px;display:flex;align-items:center;gap:8px;}.sch::after{content:'';flex:1;height:1px;background:#2a3441;}.scg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;padding:0 4px 8px;}.scc{display:block;text-decoration:none;border:1px solid #2a3441;border-left:4px solid #017AFF;border-radius:10px;padding:16px 18px;background:rgba(1,122,255,.04);transition:all .12s ease;}.scc:hover{background:rgba(1,122,255,.12);transform:translateY(-2px);border-left-color:#3399ff;}.sct{color:#e6edf3;font-size:17px;font-weight:700;margin-bottom:4px;}.scd{color:#8a93a2;font-size:13px;line-height:1.35;}.scb{display:inline-block;font-size:11px;color:#017AFF;border:1px solid #017AFF;border-radius:6px;padding:1px 7px;margin-top:9px;}</style><div class=\"sch\">Shared &middot; online data</div><div class=\"scg\"><a class=\"scc\" href=\"/d/claude-code-working\"><div class=\"sct\">Usage Analytics</div><div class=\"scd\">Org-wide cost, tokens, prompts, LOC, models, projects, tools \u2014 the executive overview.</div><span class=\"scb\">overview</span></a><a class=\"scc\" href=\"/d/claude-real-cost\"><div class=\"sct\">Real Cost</div><div class=\"scd\">Adjusted real cost (seat fee + metered overage) per developer. Finance view.</div><span class=\"scb\">finance</span></a><a class=\"scc\" href=\"/d/scopic-usage-patterns\"><div class=\"sct\">Usage Patterns &amp; Leaderboard</div><div class=\"scd\">How the team works: engagement leaderboard, purpose, workflow style, prompt craft, cost discipline, prompt volume &amp; language. Aggregate, coaching-oriented.</div><span class=\"scb\">team</span></a><a class=\"scc\" href=\"/d/scopic-dev-drilldown\"><div class=\"sct\">Developer</div><div class=\"scd\">One developer end to end: cost &amp; usage, efficiency, project timeline &amp; activity heatmaps, and their prompt patterns. Per-user filter.</div><span class=\"scb\">per-developer</span></a></div>"
+      }
+    }
+  ]
+}

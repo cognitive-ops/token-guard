@@ -1,0 +1,129 @@
+version: 0.2
+
+env:
+  variables:
+    COMPONENT: "web"
+    IMAGE: "web"
+    CONFIG_PATHS: "otel-collector-config.yaml prometheus.yml prometheus-rules.yml loki-config.yaml grafana/provisioning grafana/dashboards"
+    SERVICES: "web"
+    TAG_VAR: "WEB_TAG"
+
+phases:
+  pre_build:
+    commands:
+      - REGISTRY=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPO=$REGISTRY/$IMAGE_REPO_NAME
+      - IMAGE_TAG=$CODEBUILD_BUILD_NUMBER
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "$REGISTRY"
+
+  build:
+    commands:
+      - echo Building web image...
+      - docker buildx build --platform linux/arm64 -t $REPO:claude-roi-web-${IMAGE_TAG} "./web"
+      - docker tag $REPO:claude-roi-web-${IMAGE_TAG} $REPO:claude-roi-web-latest
+      - echo Pushing web image...
+      - docker push $REPO:claude-roi-web-${IMAGE_TAG}
+      - docker push $REPO:claude-roi-web-latest
+      - echo Building and pushing web image done.
+
+      - echo Building billing-exporter..
+      - docker buildx build --platform linux/arm64 -t $REPO:billing-exporter-${IMAGE_TAG} "./billing-exporter"
+      - docker tag $REPO:billing-exporter-${IMAGE_TAG} $REPO:billing-exporter-latest
+      - echo Pushing billing-exporter..
+      - docker push $REPO:billing-exporter-${IMAGE_TAG}
+      - docker push $REPO:billing-exporter-latest
+      - echo Building and pushing billing-exporter done.
+
+      - echo Building prompt-lang-exporter..
+      - docker buildx build --platform linux/arm64 -t $REPO:prompt-lang-exporter-${IMAGE_TAG} "./prompt-lang-exporter"
+      - docker tag $REPO:prompt-lang-exporter-${IMAGE_TAG} $REPO:prompt-lang-exporter-latest
+      - echo Pushing prompt-lang-exporter..
+      - docker push $REPO:prompt-lang-exporter-${IMAGE_TAG}
+      - docker push $REPO:prompt-lang-exporter-latest
+      - echo Building and pushing prompt-lang-exporter done.
+
+      - echo Building prompt-intent-exporter..
+      - docker buildx build --platform linux/arm64 -t $REPO:prompt-intent-exporter-${IMAGE_TAG} "./prompt-intent-exporter"
+      - docker tag $REPO:prompt-intent-exporter-${IMAGE_TAG} $REPO:prompt-intent-exporter-latest
+      - echo Pushing prompt-intent-exporter..
+      - docker push $REPO:prompt-intent-exporter-${IMAGE_TAG}
+      - docker push $REPO:prompt-intent-exporter-latest
+      - echo Building and pushing prompt-intent-exporter done.
+
+      - echo Building prompt-tool-exporter..
+      - docker buildx build --platform linux/arm64 -t $REPO:prompt-tool-exporter-${IMAGE_TAG} "./prompt-tool-exporter"
+      - docker tag $REPO:prompt-tool-exporter-${IMAGE_TAG} $REPO:prompt-tool-exporter-latest
+      - echo Pushing prompt-tool-exporter..
+      - docker push $REPO:prompt-tool-exporter-${IMAGE_TAG}
+      - docker push $REPO:prompt-tool-exporter-latest
+      - echo Building and pushing prompt-tool-exporter done.
+
+      - echo Assuming SSM deploy role...
+      - CREDS=$(aws sts assume-role --role-arn "$SSM_DEPLOY_ROLE_ARN" --role-session-name codebuild-deploy --query 'Credentials' --output json)
+      - export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.AccessKeyId')
+      - export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.SecretAccessKey')
+      - export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.SessionToken')
+
+      # Modify compose image tags + sync configs on the box, then restart — via SSM RunCommand.
+      # The whole remote script is base64'd and decoded on the box, so no quoting survives SSM.
+      - echo Deploying...
+      - |
+        set -eo pipefail
+        REGISTRY_HOST="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+        COMPOSE="docker-compose -f docker-compose.yml -f web/docker-compose.web.yml"
+
+        # configs ride inline - tar+gzip+base64 here, decode on the box
+        CONFIG_CMD=true
+        if [ -n "$CONFIG_PATHS" ]; then
+          CONFIG_B64=$(tar -czf - $CONFIG_PATHS | base64 -w0)
+          CONFIG_CMD="echo '${CONFIG_B64}' | base64 -d | tar -xzf - -C ${DEPLOY_COMPOSE_DIR}"
+        fi
+
+        # the whole deploy script that runs on the box (as ec2-user)
+        REMOTE=$(cat <<EOF
+        set -e
+        cd ${DEPLOY_COMPOSE_DIR}
+        ${CONFIG_CMD}
+        aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REGISTRY_HOST}
+        yq -i '.services.web.image = "${REPO}:claude-roi-web-${IMAGE_TAG}"' web/docker-compose.web.yml
+        yq -i '.services["billing-exporter"].image = "${REPO}:billing-exporter-${IMAGE_TAG}"' docker-compose.yml
+        yq -i '.services["prompt-lang-exporter"].image = "${REPO}:prompt-lang-exporter-${IMAGE_TAG}"' docker-compose.yml
+        yq -i '.services["prompt-intent-exporter"].image = "${REPO}:prompt-intent-exporter-${IMAGE_TAG}"' docker-compose.yml
+        yq -i '.services["prompt-tool-exporter"].image = "${REPO}:prompt-tool-exporter-${IMAGE_TAG}"' docker-compose.yml
+        ${COMPOSE} pull web billing-exporter prompt-lang-exporter prompt-intent-exporter prompt-tool-exporter
+        ${COMPOSE} up -d web billing-exporter prompt-lang-exporter prompt-intent-exporter prompt-tool-exporter
+        # prometheus reads a single-file bind-mounted rules file; restart keeps the old
+        # inode, so force-recreate to pick up synced prometheus.yml / prometheus-rules.yml
+        ${COMPOSE} up -d --force-recreate prometheus
+        ${COMPOSE} restart loki otel-collector grafana
+        docker image prune -f
+        EOF
+        )
+
+        # base64 the whole script so it survives SSM with zero quoting games:
+        # the box decodes it to a file and runs it as ec2-user (base64 has no quotes/newlines)
+        SCRIPT_B64=$(printf '%s' "$REMOTE" | base64 -w0)
+        # ensure yq is present (root context; box is arm64), then run the deploy as ec2-user
+        YQ="command -v yq >/dev/null 2>&1 || { curl -fsSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_arm64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq; }"
+        RUN="${YQ}; echo $SCRIPT_B64 | base64 -d > /tmp/claude-deploy.sh && sudo -iu ec2-user bash -l /tmp/claude-deploy.sh"
+        PARAMS=$(jq -nc --arg c "$RUN" '{commands: [$c]}')
+
+        INSTANCE_ID=i-0fe9d2092e0ab25cd
+
+        echo "Deploying (tag ${IMAGE_TAG}) via SSM RunCommand..."
+        CMD_ID=$(aws ssm send-command \
+          --region "$AWS_DEFAULT_REGION" \
+          --document-name "AWS-RunShellScript" \
+          --instance-ids "$INSTANCE_ID" \
+          --comment "Deploy ${IMAGE_TAG}" \
+          --parameters "$PARAMS" \
+          --query 'Command.CommandId' --output text)
+        echo "SSM command: $CMD_ID"
+
+        aws ssm wait command-executed --region "$AWS_DEFAULT_REGION" --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" || true
+        STATUS=$(aws ssm get-command-invocation --region "$AWS_DEFAULT_REGION" --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" --query 'Status' --output text)
+        echo "Deploy status: $STATUS"
+        aws ssm get-command-invocation --region "$AWS_DEFAULT_REGION" --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" --query 'StandardErrorContent' --output text
+        [ "$STATUS" = "Success" ] || exit 1
+        echo "Deploy complete."

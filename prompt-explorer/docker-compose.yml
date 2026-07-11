@@ -1,0 +1,35 @@
+# Local-only, opt-in Prompt Explorer.
+#
+# This is NOT part of the production stack and is never deployed to the shared
+# grafana.claude-analytics server. It runs a throwaway Grafana on your machine that
+# reads prompt text from Loki over an SSM port-forward (localhost:3100). Prompt
+# content stays on your laptop for the life of the container.
+#
+# Turn on  : ./start.sh   (opens the SSM tunnel + starts this Grafana)
+# Turn off : ./stop.sh    (stops Grafana + closes the tunnel)
+services:
+  grafana-prompt-explorer:
+    image: grafana/grafana:13.0.2
+    container_name: grafana-prompt-explorer
+    ports:
+      - "127.0.0.1:3001:3000"   # bound to localhost only
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      - GF_EXPLORE_ENABLED=true
+      - GF_NEWS_NEWS_FEED_ENABLED=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/prompt-explorer-dashboard.json
+      # Datasource URLs the "Data source" dropdown flips between.
+      # online = production Loki via the SSM port-forward on the host.
+      - ONLINE_LOKI_URL=${ONLINE_LOKI_URL:-http://host.docker.internal:3100}
+      # local = a Loki on your machine; default assumes one published on host port 3110.
+      - LOCAL_LOKI_URL=${LOCAL_LOKI_URL:-http://host.docker.internal:3110}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./provisioning:/etc/grafana/provisioning:ro
+      - ./dashboards:/var/lib/grafana/dashboards:ro
+    restart: "no"

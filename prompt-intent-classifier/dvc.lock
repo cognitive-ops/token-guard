@@ -1,0 +1,43 @@
+schema: '2.0'
+stages:
+  clean:
+    cmd: python src/clean_dataset.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 8a82c3074d8eeaa1669b4a95c282e0de.dir
+      size: 65330019
+      nfiles: 2
+    - path: src/clean_dataset.py
+      hash: md5
+      md5: 9806c9fef0dd59e9194b0d13d91ec085
+      size: 3487
+    - path: src/preprocess.py
+      hash: md5
+      md5: 4d23353c7076a6ed1348f5ce210d2dfe
+      size: 3784
+    outs:
+    - path: data/interim/clean.jsonl
+      hash: md5
+      md5: 5506ea02d310bf0af872bdf3cbca702d
+      size: 64167294
+  scrub:
+    cmd: python src/scrub_secrets.py
+    deps:
+    - path: data/interim/clean.jsonl
+      hash: md5
+      md5: 5506ea02d310bf0af872bdf3cbca702d
+      size: 64167294
+    - path: src/scrub_secrets.py
+      hash: md5
+      md5: 34ad00d1fe5bf098527f79e18284c149
+      size: 2513
+    outs:
+    - path: data/processed/labelable.jsonl
+      hash: md5
+      md5: cb52affc1638bf0525c0bea78a8fb643
+      size: 63956261
+    - path: data/processed/secret_quarantine_ids.txt
+      hash: md5
+      md5: 3d9f959718c410e5a153985572ddb1af
+      size: 2553

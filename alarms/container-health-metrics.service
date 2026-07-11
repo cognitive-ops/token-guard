@@ -1,0 +1,9 @@
+[Unit]
+Description=Publish per-container ContainerUp metrics to CloudWatch
+After=docker.service
+Wants=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/ec2-user/claude-analytics/alarms/container-health-metrics.sh
+# stdout/stderr go to the journal: journalctl -u container-health-metrics

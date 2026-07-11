@@ -1,0 +1,49 @@
+# Drop-in overlay that adds the Next.js view-layer PoC to the main stack.
+#
+#   docker compose -f docker-compose.yml -f web/docker-compose.web.yml up -d web
+#
+# It joins the same default network, so it reaches prometheus:9090 / loki:3100
+# by service name — exactly like Grafana does.
+services:
+  web:
+    build: ./web
+    container_name: claude-roi-web
+    ports:
+      - "3001:3001"
+    environment:
+      - PROMETHEUS_URL=http://prometheus:9090
+      - LOKI_URL=http://loki:3100
+      - DEFAULT_RANGE_DAYS=30
+      - REVALIDATE_SECONDS=300
+      # Heavy 30d Loki count_over_time queries swing 4-26s under concurrency;
+      # 90s lets cold loads finish so the 5-min cache can fill (increased from 30s).
+      - QUERY_TIMEOUT_MS=90000
+      # Auth — off by default; flip AUTH_ENABLED=true and supply AUTH_SECRET to
+      # require sign-in. Keycloak vars mirror the grafana service.
+      - AUTH_URL=${WEB_PUBLIC_URL:-}
+      - AUTH_ENABLED=${WEB_AUTH_ENABLED:-false}
+      - AUTH_SECRET=${WEB_AUTH_SECRET:-}
+      - LOCAL_LOGIN_ENABLED=${WEB_LOCAL_LOGIN_ENABLED:-true}
+      - LOCAL_USERNAME=${DASHBOARD_USERNAME:-admin}
+      - LOCAL_PASSWORD=${DASHBOARD_PASSWORD:-admin}
+      - KEYCLOAK_ENABLED=${KEYCLOAK_ENABLED:-false}
+      - KEYCLOAK_URL=${KEYCLOAK_URL:-}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-}
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:-}
+      # Keycloak roles allowed to sign in (mirrors Grafana's strict role mapping).
+      - ALLOWED_ROLES=${WEB_ALLOWED_ROLES:-grafana-viewer,grafana-admin}
+      # API Cost dashboard — reuses the billing-exporter's Admin key (mounted below).
+      - ADMIN_KEY_PATH=/secrets/admin-key
+    volumes:
+      - type: bind
+        source: ./.secrets/admin-key
+        target: /secrets/admin-key
+        read_only: true
+        bind:
+          create_host_path: false
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+    mem_limit: 256m

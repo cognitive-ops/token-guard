@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/* Class-based dark mode (next-themes toggles `.dark` on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Semantic color tokens as CSS variables so the whole UI flips between themes
+ * at runtime. Light is the default (:root); .dark overrides. Both palettes are
+ * tuned for contrast/visibility, Scopic-blue led.
+ */
+:root {
+  --color-bg: #f5f7fb;
+  --color-panel: #ffffff;
+  --color-panel-2: #eef2f8;
+  --color-panel-border: #dde4ee;
+  --color-text: #0e1a2b;
+  --color-muted: #5a6775;
+  --color-scopic: #0a6cff;
+  --color-scopic-light: #2f86ff;
+  --color-scopic-dark: #0a4d8c;
+  --color-violet: #6d4bff;
+  --color-teal: #0f9b8e;
+  --color-good: #1a9d63;
+  --color-warn: #c2410c;
+  --color-bad: #d4343f;
+  --shadow-panel: 0 1px 2px rgba(16, 26, 43, 0.06), 0 1px 3px rgba(16, 26, 43, 0.1);
+}
+
+.dark {
+  --color-bg: #0b0f17;
+  --color-panel: #121826;
+  --color-panel-2: #1a2233;
+  --color-panel-border: #232c3f;
+  --color-text: #e6edf3;
+  --color-muted: #8a93a2;
+  --color-scopic: #2f86ff;
+  --color-scopic-light: #5aa0ff;
+  --color-scopic-dark: #0a4d8c;
+  --color-violet: #8b73ff;
+  --color-teal: #2aa198;
+  --color-good: #34d399;
+  --color-warn: #fb923c;
+  --color-bad: #f87171;
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+@theme inline {
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+}
+
+html,
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Brand glow behind page headers — subtle in both themes. */
+.brand-aura {
+  background:
+    radial-gradient(900px 240px at 0% -10%, color-mix(in srgb, var(--color-scopic) 14%, transparent), transparent 60%),
+    radial-gradient(700px 200px at 100% -20%, color-mix(in srgb, var(--color-violet) 10%, transparent), transparent 60%);
+}
+
+.panel {
+  border: 1px solid var(--color-panel-border);
+  background-color: var(--color-panel);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-panel);
+}
+
+.panel-hover {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.panel-hover:hover {
+  border-color: color-mix(in srgb, var(--color-scopic) 45%, transparent);
+}
+
+.accent-rule {
+  background: linear-gradient(90deg, var(--color-scopic), var(--color-violet) 70%, transparent);
+}
+
+/* Themed, slim scrollbars for panels, tables, and the page. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-muted) 45%, transparent) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--color-muted) 38%, transparent);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--color-scopic) 60%, transparent);
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}

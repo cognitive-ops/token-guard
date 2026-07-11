@@ -1,0 +1,4 @@
+# ShellCheck configuration — https://github.com/koalaman/shellcheck/wiki/Directive
+# SC1091: "Not following: <file> was not specified as input" — these scripts source
+# a sibling lib.sh resolved at runtime; ShellCheck can't follow it statically. Expected.
+disable=SC1091

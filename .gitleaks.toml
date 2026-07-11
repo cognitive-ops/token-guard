@@ -1,0 +1,23 @@
+# Gitleaks configuration — https://github.com/gitleaks/gitleaks
+# Extends the upstream default ruleset, then adds repo-specific allowlisting.
+title = "claude-code-roi-analytics gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for example configs and non-secret placeholders"
+
+paths = [
+  '''(^|/)\.env\.example$''',
+  '''.*\.example\.(ya?ml|json|env)$''',
+  '''(^|/)README\.md$''',
+  '''(^|/)docs/''',
+]
+
+regexes = [
+  # Common placeholder tokens used in example/template files
+  '''(?i)(your[-_]?(api[-_]?)?(key|token|secret|password)[-_]?here)''',
+  '''(?i)(changeme|placeholder|example|dummy|xxxx+)''',
+  '''(?i)<[a-z0-9_\- ]+>''',
+]

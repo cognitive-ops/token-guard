@@ -1,0 +1,49 @@
+# Seat roster — the source of truth for REAL per-developer cost.
+# Copy to seat-roster.yaml (gitignored) and fill in from claude.ai -> Admin -> Members.
+#
+# Real cost per developer = seat_fee (flat, below) + metered overage (auto, usually $0).
+
+# Flat monthly seat fee, in USD. Premium = includes Claude Code; Standard = no Claude Code.
+# Monthly billing: premium 125 / standard 25.  Annual commitment: premium 100 / standard 20.
+seat_fees:
+  premium: 125
+  standard: 25
+
+# One entry per member. seat_type: premium | standard
+members:
+  - email: viet-anh.n@scopicsoftware.com
+    seat_type: premium
+  # - email: someone.else@scopicsoftware.com
+  #   seat_type: standard
+
+# OPTIONAL override map. Overage shows up in the Usage Report API keyed by account_id
+# (user_01...), never by email, so it must be translated to a person. The exporter
+# auto-builds this map from the Members API (/v1/organizations/users) on every poll, so
+# you normally leave this empty. Add entries here only to OVERRIDE the auto-map for an
+# edge case — the roster wins over the auto-map.
+account_map: {}
+  # user_01AbC...: viet-anh.n@scopicsoftware.com
+
+# Manual extra-usage fallback ($, for the lookback window). Seat overage may NOT
+# appear in the Anthropic APIs (subscription billing is an API blind spot —
+# verified: no account_id-attributed usage in Apr/May/Jun 2026). Read per-member
+# overage from claude.ai -> Admin -> Billing and record it here. Used only when the
+# API reports NO overage for that member (so the two never double-count).
+manual_extra_usage: {}
+  # viet-anh.n@scopicsoftware.com: 12.50
+
+# Claude Code SERVICE/automation workspaces. The Cost Report API returns the org's
+# ENTIRE Anthropic bill across ALL workspaces (your products included), so list ONLY
+# the workspace(s) where Claude Code automation / service keys run. Anything not listed
+# is excluded. Empty -> service cost counts as $0 (avoids counting the whole org bill).
+# Find the IDs in the `claude_workspace_billed_cost_usd` metric (one series per workspace).
+service_workspace_ids: []
+  # - wrkspc_01...   # claude-code automation workspace
+
+# List prices ($ per million tokens) used to value overage tokens. Keep current.
+pricing:
+  claude-haiku-4-5-20251001:   {input: 0.80, output: 4.00,  cache_read: 0.08, cache_write: 1.00}
+  claude-sonnet-4-5-20250929:  {input: 3.00, output: 15.00, cache_read: 0.30, cache_write: 3.75}
+  claude-sonnet-4-6:           {input: 3.00, output: 15.00, cache_read: 0.30, cache_write: 3.75}
+  claude-opus-4-8:             {input: 15.00, output: 75.00, cache_read: 1.50, cache_write: 18.75}
+  default:                     {input: 3.00, output: 15.00, cache_read: 0.30, cache_write: 3.75}

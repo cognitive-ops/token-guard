@@ -1,0 +1,8 @@
+# Add patterns of files dvc should ignore, which could improve
+# the performance. Learn more at
+# https://dvc.org/doc/user-guide/dvcignore
+
+# Keep the sensitive one-off restored backup archive (raw prompt dumps that may
+# contain secrets) out of DVC's view. The pipeline reads only data/raw/*.jsonl.
+prompt-intent-classifier/data/Prompt-Intent-Classification-Data-*/
+prompt-intent-classifier/data/*.zip

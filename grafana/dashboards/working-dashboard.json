@@ -1,0 +1,2117 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "title": "Usage Patterns & Leaderboard",
+      "type": "link",
+      "url": "/d/scopic-usage-patterns",
+      "icon": "external link",
+      "targetBlank": false,
+      "tooltip": "",
+      "tags": [],
+      "asDropdown": false,
+      "includeVars": false,
+      "keepTime": true
+    }
+  ],
+  "panels": [
+    {
+      "type": "text",
+      "title": "",
+      "id": 26,
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "transparent": true,
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;align-items:center;gap:16px;padding:6px 2px;border-bottom:2px solid #017AFF;\"><img src=\"/public/img/scopic-logo.webp\" height=\"30\" alt=\"Scopic\"/><span style=\"color:#017AFF;font-size:20px;font-weight:700;letter-spacing:.2px;\">Scopic AI Usage Analytics</span><span style=\"color:#8a93a2;font-size:14px;margin-left:auto;\">Overview &middot; org-wide</span></div>"
+      }
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#017AFF"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 3
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total[$__range]))",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Total Cost",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#017AFF"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 3
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "count(count by (user_email)(increase(claude_code_cost_usage_USD_total[$__range]) > 0))",
+          "instant": false,
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Active Users",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#017AFF"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 3
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(claude_code_token_usage_tokens_total[$__range]))",
+          "instant": false,
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Total Tokens",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#017AFF"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 3
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(claude_code_lines_of_code_count_total[$__range]))",
+          "instant": false,
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Lines of Code",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 11
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (project_name) (\n  label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(\n  label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(\n  label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(\n  label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(\n  label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(\n  label_replace(label_replace(label_replace(\n    sum by (repository_fullname)(increase(claude_code_cost_usage_USD_total[$__range])),\n    \"project_name\", \"$1\", \"repository_fullname\", \"(.+)\"),\n    \"project_name\", \"Akillion\", \"repository_fullname\", \"akillion/.+\"),\n    \"project_name\", \"Baseball Card Market\", \"repository_fullname\", \"baseball\\\\-card\\\\-market/.+\"),\n    \"project_name\", \"Carrier Web Portal and Mobile App\", \"repository_fullname\", \"carrier\\\\-community\\\\-gmbh\\\\-and\\\\-co\\\\-kg/.+\"),\n    \"project_name\", \"Crain AI Proposal Generator\", \"repository_fullname\", \"crain\\\\-communications\\\\-inc/.+\"),\n    \"project_name\", \"ECS Clinical Chat Application\", \"repository_fullname\", \"ken\\\\-meacham\\\\-iaci/.+\"),\n    \"project_name\", \"Intellisel-OSP\", \"repository_fullname\", \"intellisell\\\\-inc/.+\"),\n    \"project_name\", \"KLOwen Braces\", \"repository_fullname\", \"klowen/.+\"),\n    \"project_name\", \"Mediphany AI MVP\", \"repository_fullname\", \"Mediphany/.+\"),\n    \"project_name\", \"OneKeel XDP\", \"repository_fullname\", \"iron\\\\-sheeks\\\\-holding/.+\"),\n    \"project_name\", \"PBT Marketplace Websites\", \"repository_fullname\", \"pbt\\\\-marketplace/.+\"),\n    \"project_name\", \"Pro Pics\", \"repository_fullname\", \"pro\\\\-pics/.+\"),\n    \"project_name\", \"Sales Tank CRM App\", \"repository_fullname\", \"sales\\\\-tank/.+\"),\n    \"project_name\", \"Rehab Angles\", \"repository_fullname\", \"rehab\\\\-bookings/.+\"),\n    \"project_name\", \"MedCad AI\", \"repository_fullname\", \"medcad/.+\"),\n    \"project_name\", \"The Democracy Domain\", \"repository_fullname\", \"TheDSquaredInitiative/.+\"),\n    \"project_name\", \"WerkandMe\", \"repository_fullname\", \"iron\\\\-sheeks\\\\-holding\\\\-werkandme/.+\"),\n    \"project_name\", \"VoidMapper\", \"repository_fullname\", \"maretual\\\\-pty\\\\-ltd/.+\"),\n    \"project_name\", \"Tabacco Development\", \"repository_fullname\", \"tabacco\\\\-development/.+\"),\n    \"project_name\", \"The Attributes\", \"repository_fullname\", \"the\\\\-attributes/.+\"),\n    \"project_name\", \"theAutominer\", \"repository_fullname\", \"theautominer/.+\"),\n    \"project_name\", \"Trophy Scan\", \"repository_fullname\", \"lcpo\\\\-holdings\\\\-llc/.+\"),\n    \"project_name\", \"Yacht Scoring\", \"repository_fullname\", \"yachtscoring/.+\"),\n    \"project_name\", \"Medical Case Management System\", \"repository_fullname\", \"ell\\\\-inc/.+\"),\n    \"project_name\", \"ML Commons\", \"repository_fullname\", \"mlcommons/.+\"),\n    \"project_name\", \"OrthoSelect\", \"repository_fullname\", \"orthoselect/.+\"),\n    \"project_name\", \"SketchList\", \"repository_fullname\", \"sketchlist/.+\"),\n    \"project_name\", \"Slippers Studio\", \"repository_fullname\", \"slippers\\\\-studio/.+\"),\n    \"project_name\", \"Scopic Internal\", \"repository_fullname\", \"scopic\\\\-software/.+\"),\n    \"project_name\", \"Scopic Internal\", \"repository_fullname\", \"ai\\\\-poc/.+\"),\n    \"project_name\", \"Marketing Microsite\", \"repository_fullname\", \"scopic\\\\-software/marketing\\\\-microsite\"),\n    \"project_name\", \"MedCad AI\", \"repository_fullname\", \"scopic\\\\-software/medcad\\\\-ai\\\\-replit\\\\-webapp\"),\n    \"project_name\", \"AI-powered video editor\", \"repository_fullname\", \"scopic\\\\-software/video\\\\-gen\\\\-studio\"),\n    \"project_name\", \"Scopic Portal\", \"repository_fullname\", \"scopic\\\\-software/scopic\\\\-support\\\\-portal\"),\n    \"project_name\", \"Scopic Website v.2\", \"repository_fullname\", \"scopic\\\\-software/scopic\\\\-website\\\\-migration\"),\n    \"project_name\", \"Scopic Scout\", \"repository_fullname\", \"scopic\\\\-software/seniority\\\\-determination\\\\-tool\"),\n    \"project_name\", \"AI Risk Manager\", \"repository_fullname\", \"scopic\\\\-software/ai\\\\-risk\\\\-manager\"),\n    \"project_name\", \"Resource Management Tool\", \"repository_fullname\", \"scopic\\\\-software/resource\\\\-management\\\\-tool\"),\n    \"project_name\", \"Agent Studio\", \"repository_fullname\", \"scopic\\\\-software/scopic\\\\-agent\\\\-studio\"),\n    \"project_name\", \"Vexa\", \"repository_fullname\", \"scopic\\\\-software/vexa\\\\-test\\\\-management\"),\n    \"project_name\", \"Zoom Radar\", \"repository_fullname\", \"scopic\\\\-software/zoom\\\\-radar\\\\-customer\\\\-portal\"),\n    \"project_name\", \"Zoom Radar\", \"repository_fullname\", \"scopic\\\\-software/zoomradar\\\\-wordpress\"),\n    \"project_name\", \"No Repo/Project - CLI App\", \"project_name\", \"^$\")\n)",
+          "instant": false,
+          "legendFormat": "{{project_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by Project",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 11
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (project_name) (\n  label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(\n  label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(\n  label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(\n  label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(\n  label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(label_replace(\n  label_replace(label_replace(label_replace(\n    sum by (repository_fullname)(increase(claude_code_token_usage_tokens_total[$__range])),\n    \"project_name\", \"$1\", \"repository_fullname\", \"(.+)\"),\n    \"project_name\", \"Akillion\", \"repository_fullname\", \"akillion/.+\"),\n    \"project_name\", \"Baseball Card Market\", \"repository_fullname\", \"baseball\\\\-card\\\\-market/.+\"),\n    \"project_name\", \"Carrier Web Portal and Mobile App\", \"repository_fullname\", \"carrier\\\\-community\\\\-gmbh\\\\-and\\\\-co\\\\-kg/.+\"),\n    \"project_name\", \"Crain AI Proposal Generator\", \"repository_fullname\", \"crain\\\\-communications\\\\-inc/.+\"),\n    \"project_name\", \"ECS Clinical Chat Application\", \"repository_fullname\", \"ken\\\\-meacham\\\\-iaci/.+\"),\n    \"project_name\", \"Intellisel-OSP\", \"repository_fullname\", \"intellisell\\\\-inc/.+\"),\n    \"project_name\", \"KLOwen Braces\", \"repository_fullname\", \"klowen/.+\"),\n    \"project_name\", \"Mediphany AI MVP\", \"repository_fullname\", \"Mediphany/.+\"),\n    \"project_name\", \"OneKeel XDP\", \"repository_fullname\", \"iron\\\\-sheeks\\\\-holding/.+\"),\n    \"project_name\", \"PBT Marketplace Websites\", \"repository_fullname\", \"pbt\\\\-marketplace/.+\"),\n    \"project_name\", \"Pro Pics\", \"repository_fullname\", \"pro\\\\-pics/.+\"),\n    \"project_name\", \"Sales Tank CRM App\", \"repository_fullname\", \"sales\\\\-tank/.+\"),\n    \"project_name\", \"Rehab Angles\", \"repository_fullname\", \"rehab\\\\-bookings/.+\"),\n    \"project_name\", \"MedCad AI\", \"repository_fullname\", \"medcad/.+\"),\n    \"project_name\", \"The Democracy Domain\", \"repository_fullname\", \"TheDSquaredInitiative/.+\"),\n    \"project_name\", \"WerkandMe\", \"repository_fullname\", \"iron\\\\-sheeks\\\\-holding\\\\-werkandme/.+\"),\n    \"project_name\", \"VoidMapper\", \"repository_fullname\", \"maretual\\\\-pty\\\\-ltd/.+\"),\n    \"project_name\", \"Tabacco Development\", \"repository_fullname\", \"tabacco\\\\-development/.+\"),\n    \"project_name\", \"The Attributes\", \"repository_fullname\", \"the\\\\-attributes/.+\"),\n    \"project_name\", \"theAutominer\", \"repository_fullname\", \"theautominer/.+\"),\n    \"project_name\", \"Trophy Scan\", \"repository_fullname\", \"lcpo\\\\-holdings\\\\-llc/.+\"),\n    \"project_name\", \"Yacht Scoring\", \"repository_fullname\", \"yachtscoring/.+\"),\n    \"project_name\", \"Medical Case Management System\", \"repository_fullname\", \"ell\\\\-inc/.+\"),\n    \"project_name\", \"ML Commons\", \"repository_fullname\", \"mlcommons/.+\"),\n    \"project_name\", \"OrthoSelect\", \"repository_fullname\", \"orthoselect/.+\"),\n    \"project_name\", \"SketchList\", \"repository_fullname\", \"sketchlist/.+\"),\n    \"project_name\", \"Slippers Studio\", \"repository_fullname\", \"slippers\\\\-studio/.+\"),\n    \"project_name\", \"Scopic Internal\", \"repository_fullname\", \"scopic\\\\-software/.+\"),\n    \"project_name\", \"Scopic Internal\", \"repository_fullname\", \"ai\\\\-poc/.+\"),\n    \"project_name\", \"Marketing Microsite\", \"repository_fullname\", \"scopic\\\\-software/marketing\\\\-microsite\"),\n    \"project_name\", \"MedCad AI\", \"repository_fullname\", \"scopic\\\\-software/medcad\\\\-ai\\\\-replit\\\\-webapp\"),\n    \"project_name\", \"AI-powered video editor\", \"repository_fullname\", \"scopic\\\\-software/video\\\\-gen\\\\-studio\"),\n    \"project_name\", \"Scopic Portal\", \"repository_fullname\", \"scopic\\\\-software/scopic\\\\-support\\\\-portal\"),\n    \"project_name\", \"Scopic Website v.2\", \"repository_fullname\", \"scopic\\\\-software/scopic\\\\-website\\\\-migration\"),\n    \"project_name\", \"Scopic Scout\", \"repository_fullname\", \"scopic\\\\-software/seniority\\\\-determination\\\\-tool\"),\n    \"project_name\", \"AI Risk Manager\", \"repository_fullname\", \"scopic\\\\-software/ai\\\\-risk\\\\-manager\"),\n    \"project_name\", \"Resource Management Tool\", \"repository_fullname\", \"scopic\\\\-software/resource\\\\-management\\\\-tool\"),\n    \"project_name\", \"Agent Studio\", \"repository_fullname\", \"scopic\\\\-software/scopic\\\\-agent\\\\-studio\"),\n    \"project_name\", \"Vexa\", \"repository_fullname\", \"scopic\\\\-software/vexa\\\\-test\\\\-management\"),\n    \"project_name\", \"Zoom Radar\", \"repository_fullname\", \"scopic\\\\-software/zoom\\\\-radar\\\\-customer\\\\-portal\"),\n    \"project_name\", \"Zoom Radar\", \"repository_fullname\", \"scopic\\\\-software/zoomradar\\\\-wordpress\"),\n    \"project_name\", \"No Repo/Project - CLI App\", \"project_name\", \"^$\")\n)",
+          "instant": false,
+          "legendFormat": "{{project_name}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Tokens by Project",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (model)(increase(claude_code_cost_usage_USD_total[$__range]))",
+          "instant": false,
+          "legendFormat": "{{model}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by Model",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (type)(increase(claude_code_token_usage_tokens_total[$__range]))",
+          "instant": false,
+          "legendFormat": "{{type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Token Usage by Type",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Value"
+          }
+        ]
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (user_email) (sum by (user_id)(increase(claude_code_cost_usage_USD_total[$__range])) * on(user_id) group_left(user_email) claude_user_email_by_id)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by User",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value": "Total Cost",
+              "user_email": "User"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Value"
+          }
+        ]
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (type)(increase(claude_code_lines_of_code_count_total[$__range]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Lines of Code by Type",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value": "Lines",
+              "type": "Type"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Cost breakdown by repository. Requires repository.fullname in OTEL_RESOURCE_ATTRIBUTES via .claude/settings.json.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
+      "id": 19,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (repository_fullname)(increase(claude_code_cost_usage_USD_total[$__range]))",
+          "instant": true,
+          "legendFormat": "{{repository_fullname}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by Repository",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Breakdown of tool executions by type. High 'Agent' percentage indicates agentic/delegated work patterns (vibe coding).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (tool_name)(claude_tool_usage_count)",
+          "instant": true,
+          "legendFormat": "{{tool_name}}",
+          "range": false,
+          "refId": "A",
+          "format": "table"
+        }
+      ],
+      "title": "Tool Usage Distribution (Agent = Vibe Coding)",
+      "type": "piechart",
+      "transformations": [
+        {
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              {
+                "fieldName": "Time",
+                "handlerKey": "__ignore"
+              },
+              {
+                "fieldName": "tool_name",
+                "handlerKey": "field.name"
+              },
+              {
+                "fieldName": "Value #A",
+                "handlerKey": "field.value"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Total cost / total LOC * 1000. When LOC < 1000 this extrapolates (e.g. $1 for 50 lines = $20 per 1000 lines). Shows 'No LOC data yet' when no lines have been tracked.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#017AFF"
+          },
+          "mappings": [],
+          "noValue": "No LOC data yet",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 43
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total[$__range])) / clamp_min(sum(increase(claude_code_lines_of_code_count_total[$__range])), 1) * 1000",
+          "instant": false,
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost per 1000 LOC",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Daily cost per user. Uses 1-day windows to reliably capture API call cost bursts \u2014 shorter windows miss costs when Claude Code API calls complete faster than the 15s Prometheus scrape interval. Legend sum is approximate; see 'Cost by User' table for precise totals.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 6,
+        "y": 43
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (user_email)(increase(claude_code_cost_usage_USD_total[1d]))",
+          "instant": false,
+          "interval": "1d",
+          "legendFormat": "{{user_email}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost Over Time by User",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Total cost divided by number of active users in the selected time range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#017AFF"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 51
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total[$__range])) / clamp_min(count(count by (user_email)(increase(claude_code_cost_usage_USD_total[$__range]) > 0)),1)",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Avg Cost per User",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Materialized ~30-day snapshot from the prompt-intent / prompt-lang exporter (Prometheus gauge), read in <1ms instead of scanning Loki. Reflects roughly the last 30 days and is independent of the time picker.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#017AFF"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 51
+      },
+      "id": 17,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(claude_prompt_count) / count(sum by (user_email)(claude_prompt_count))",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Avg Prompts per User",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Total cost divided by total Claude Code active processing time. Active time excludes idle time while developer reads responses or writes prompts.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#017AFF"
+          },
+          "decimals": 3,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 51
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total[$__range])) / clamp_min(sum(increase(claude_code_active_time_seconds_total[$__range])) / 3600, 1)",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost per Active Hour",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Cost breakdown by git hosting platform (github.com, gitea, bitbucket.org, gitlab.com, etc.).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 51
+      },
+      "id": 20,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (repository_host)(increase(claude_code_cost_usage_USD_total[$__range]))",
+          "instant": true,
+          "legendFormat": "{{repository_host}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by Git Host",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Cost breakdown by terminal or IDE. Named IDEs (pycharm, vscode, windsurf, cursor, phpstorm) are reported directly. 'non-interactive' typically indicates an IDE extension running Claude Code as a background subprocess.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 59
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (terminal_type)(increase(claude_code_cost_usage_USD_total[$__range]))",
+          "instant": true,
+          "legendFormat": "{{terminal_type}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by Terminal / IDE",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Materialized ~30-day snapshot from the prompt-intent / prompt-lang exporter (Prometheus gauge), read in <1ms instead of scanning Loki. Reflects roughly the last 30 days and is independent of the time picker.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#017AFF"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 59
+      },
+      "id": 22,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(claude_prompt_count)",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Total Prompts",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Materialized ~30-day snapshot from the prompt-intent / prompt-lang exporter (Prometheus gauge), read in <1ms instead of scanning Loki. Reflects roughly the last 30 days and is independent of the time picker.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#017AFF"
+          },
+          "decimals": 3,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 59
+      },
+      "id": 23,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(claude_code_cost_usage_USD_total[$__range])) / sum(claude_prompt_count)",
+          "instant": true,
+          "legendFormat": "Cost per Prompt",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost per Prompt",
+      "transformations": [],
+      "type": "stat"
+    },
+    {
+      "type": "piechart",
+      "title": "Prompt Language Distribution (last 30d)",
+      "id": 24,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 67
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (language) (claude_prompt_language_count)",
+          "legendFormat": "{{language}}",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Prompt Language by Developer (last 30d)",
+      "id": 25,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 67
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Prompts",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (user_email, language) (claude_prompt_language_count)",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "instance": true
+            },
+            "renameByName": {
+              "user_email": "Developer",
+              "language": "Language",
+              "Value": "Prompts"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": 100,
+      "transparent": true,
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 76
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;align-items:center;gap:12px;padding:4px 2px;border-bottom:2px solid #017AFF;\"><span style=\"color:#017AFF;font-size:16px;font-weight:700;\">Usage Patterns \u2014 insights</span><a href=\"/d/scopic-usage-patterns\" style=\"color:#017AFF;font-size:13px;\">Open full Usage Patterns &amp; Leaderboard \u2192</a><span style=\"color:#8a93a2;font-size:12px;margin-left:auto;\">how the team works, not just how much it costs</span></div>"
+      }
+    },
+    {
+      "id": 101,
+      "type": "piechart",
+      "title": "Request source (main vs subagent)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 78,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (query_source)(increase(claude_code_cost_usage_USD_total[$__range]))",
+          "legendFormat": "{{query_source}}",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "type": "piechart",
+      "title": "Effort level",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 78,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (effort)(increase(claude_code_cost_usage_USD_total[$__range]))",
+          "legendFormat": "{{effort}}",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "type": "piechart",
+      "title": "Intent mix (what it's used for)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 78,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (intent)(claude_prompt_intent_count)",
+          "legendFormat": "{{intent}}",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "description": "Materialized ~30-day snapshot from the prompt-intent / prompt-lang exporter (Prometheus gauge), read in <1ms instead of scanning Loki. Reflects roughly the last 30 days and is independent of the time picker."
+    },
+    {
+      "id": 104,
+      "type": "table",
+      "title": "Developer leaderboard (top by prompts)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 86,
+        "w": 24,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          },
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Prompts"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cache ratio"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Prompts",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (user_email)(claude_prompt_count)",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "count by (user_email)(count_over_time(claude_code_session_count_total[$__range]))",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (user_email)(max_over_time(claude_code_commit_count_total[$__range]))",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "sum by (user_email)(increase(claude_code_token_usage_tokens_total{type=\"cacheRead\"}[$__range])) / clamp_min(sum by (user_email)(increase(claude_code_token_usage_tokens_total{type=\"cacheCreation\"}[$__range])),1)",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "D"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "job": true,
+              "instance": true
+            },
+            "renameByName": {
+              "user_email": "Developer",
+              "Value #A": "Prompts",
+              "Value #B": "Sessions",
+              "Value #C": "Commits",
+              "Value #D": "Cache ratio"
+            },
+            "indexByName": {
+              "Developer": 0,
+              "Prompts": 1,
+              "Sessions": 2,
+              "Commits": 3,
+              "Cache ratio": 4
+            }
+          }
+        }
+      ],
+      "description": "Materialized ~30-day snapshot from the prompt-intent / prompt-lang exporter (Prometheus gauge), read in <1ms instead of scanning Loki. Reflects roughly the last 30 days and is independent of the time picker."
+    }
+  ],
+  "preload": false,
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "claude-code",
+    "working"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Scopic AI Usage Analytics \u2014 Overview",
+  "uid": "claude-code-working",
+  "version": 24,
+  "weekStart": ""
+}

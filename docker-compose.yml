@@ -1,0 +1,185 @@
+services:
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.149.0
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    environment:
+      - OTEL_AUTH_TOKEN=${OTEL_AUTH_TOKEN}
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC (otel.claude-analytics.scopicdev.com)
+      - "4318:4318"   # OTLP HTTP (otel-http.claude-analytics.scopicdev.com)
+      - "13133:13133" # Health check
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+    mem_limit: 512m
+
+  # Prometheus (metrics storage)
+  prometheus:
+    image: prom/prometheus:v3.11.1
+    container_name: prometheus
+    environment:
+      - GOMEMLIMIT=1350MiB
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus-rules.yml:/etc/prometheus/prometheus-rules.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=3650d'
+      - '--storage.tsdb.retention.size=15GB'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    mem_limit: 1536m
+
+  # Billing exporter (real per-developer cost: seat fee + metered overage + service-key billing)
+  billing-exporter:
+    build: ./billing-exporter
+    container_name: billing-exporter
+    # Run as the uid that owns .secrets/admin-key (non-root; the image's appuser
+    # can't read the 0600 key). Keeps DS-0002 non-root while retaining key access.
+    user: "1001:1000"
+    environment:
+      - POLL_INTERVAL_SECONDS=21600   # 6h; billing data lags, no need to poll fast
+      - LOOKBACK_DAYS=30
+      - ADMIN_KEY_PATH=/secrets/admin-key
+      - ROSTER_PATH=/config/seat-roster.yaml
+    volumes:
+      - type: bind
+        source: ./.secrets/admin-key
+        target: /secrets/admin-key
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./billing-exporter/seat-roster.yaml
+        target: /config/seat-roster.yaml
+        read_only: true
+        bind:
+          create_host_path: false
+    restart: unless-stopped
+    mem_limit: 128m
+
+  # Prompt-language exporter (detects language of user prompts from Loki)
+  prompt-lang-exporter:
+    build: ./prompt-lang-exporter
+    container_name: prompt-lang-exporter
+    environment:
+      - LOKI_URL=http://loki:3100
+      - LOOKBACK_DAYS=30
+      - POLL_INTERVAL_SECONDS=3600
+    depends_on:
+      - loki
+    restart: unless-stopped
+    # Holds per-user prompt counts for the whole 30d corpus in memory while
+    # polling; observed steady-state was 99.8% of 128m, leaving no headroom for a
+    # volume spike (→ OOM → blank prompt-language/count panels). 256m gives slack.
+    mem_limit: 256m
+
+  # Prompt-intent exporter (classifies prompt intent + behaviors via local ONNX model)
+  prompt-intent-exporter:
+    build: ./prompt-intent-exporter
+    container_name: prompt-intent-exporter
+    environment:
+      - LOKI_URL=http://loki:3100
+      - LOOKBACK_DAYS=29
+      - POLL_INTERVAL_SECONDS=3600
+      - MODEL_DIR=/model
+      - ORT_THREADS=2
+    volumes:
+      # ONNX deploy bundle (committed via Git LFS). Override with INTENT_MODEL_DIR
+      # (e.g. ./prompt-intent-classifier/data/onnx) to use a locally-exported model.
+      - ${INTENT_MODEL_DIR:-./prompt-intent-classifier/deploy-model}:/model:ro
+    depends_on:
+      - loki
+    restart: unless-stopped
+    mem_limit: 1g
+
+  # Prompt-tool exporter (aggregates tool_result events by tool_name + user_email)
+  prompt-tool-exporter:
+    build: ./prompt-tool-exporter
+    container_name: prompt-tool-exporter
+    environment:
+      - LOKI_URL=http://loki:3100
+      - LOOKBACK_DAYS=30
+      - POLL_INTERVAL_SECONDS=3600
+    depends_on:
+      - loki
+    restart: unless-stopped
+    mem_limit: 128m
+
+  # Loki (log/event storage)
+  loki:
+    image: grafana/loki:3.7.1
+    container_name: loki
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    mem_limit: 1536m
+
+  # Grafana (dashboards) — built from grafana/Dockerfile for Scopic title branding
+  grafana:
+    build: ./grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"   # Grafana (grafana.claude-analytics.scopicdev.com)
+    environment:
+      # Hour-of-day x day heatmap panel used by the Developer Timeline dashboard
+      - GF_INSTALL_PLUGINS=marcusolsson-hourly-heatmap-panel
+      - GF_SECURITY_ADMIN_USER=${DASHBOARD_USERNAME:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${DASHBOARD_PASSWORD:-admin}
+      - GF_SERVER_ROOT_URL=https://grafana.claude-analytics.scopicdev.com
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+      # allow the Scopic logo <img> in dashboard text panels
+      - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      # hide the "Grafana vX.Y" version string on the (unauthenticated) login page
+      - GF_AUTH_ANONYMOUS_HIDE_VERSION=true
+      # default theme for all users (standard dark)
+      - GF_FEATURE_TOGGLES_ENABLE=grafanaconThemes
+      - GF_USERS_DEFAULT_THEME=dark
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/home-launcher.json
+      # Hide unused left-sidebar items
+      - GF_EXPLORE_ENABLED=false
+      - GF_HELP_ENABLED=false
+      - GF_NEWS_NEWS_FEED_ENABLED=false
+      # Keycloak SSO (OIDC)
+      - GF_AUTH_GENERIC_OAUTH_ENABLED=${KEYCLOAK_ENABLED:-false}
+      - GF_AUTH_GENERIC_OAUTH_NAME=Scopic SSO
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-}
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:-}
+      - GF_AUTH_GENERIC_OAUTH_SCOPES=openid email profile roles
+      - GF_AUTH_GENERIC_OAUTH_AUTH_URL=${KEYCLOAK_URL:-}/realms/${KEYCLOAK_REALM:-}/protocol/openid-connect/auth
+      - GF_AUTH_GENERIC_OAUTH_TOKEN_URL=${KEYCLOAK_URL:-}/realms/${KEYCLOAK_REALM:-}/protocol/openid-connect/token
+      - GF_AUTH_GENERIC_OAUTH_API_URL=${KEYCLOAK_URL:-}/realms/${KEYCLOAK_REALM:-}/protocol/openid-connect/userinfo
+      # Access control via Keycloak roles: grafana-admin -> Admin, grafana-viewer -> Viewer.
+      # STRICT=true denies login to anyone with neither role (no default role assigned).
+      - GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH=contains(roles[*], 'grafana-admin') && 'Admin' || contains(roles[*], 'grafana-viewer') && 'Viewer'
+      - GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_STRICT=true
+      - GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=true
+      - GF_AUTH_OAUTH_ALLOW_INSECURE_EMAIL_LOOKUP=true
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      # Scopic logo for the in-dashboard header text panels (served at /public/img/).
+      # The favicon + nav/login logo are baked into the image (grafana/Dockerfile).
+      - ./scopic-logo.webp:/usr/share/grafana/public/img/scopic-logo.webp:ro
+      - ./scopic-icon.png:/usr/share/grafana/public/img/scopic-icon.png:ro
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+    mem_limit: 512m
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:

@@ -1,0 +1,9 @@
+[Unit]
+Description=Publish billing-exporter health signals to CloudWatch
+After=docker.service
+Wants=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/ec2-user/claude-analytics/alarms/billing-health-metrics.sh
+# stdout/stderr go to the journal: journalctl -u billing-health-metrics

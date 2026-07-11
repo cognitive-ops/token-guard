@@ -1,0 +1,8 @@
+# Hadolint configuration — https://github.com/hadolint/hadolint
+ignored:
+  - DL3003  # "Use WORKDIR" — grafana/Dockerfile uses cd inside one crafted branding RUN
+  - DL3008  # "Pin apt versions" — not pinning OS packages in these small images is acceptable
+  - DL3013  # "Pin pip versions" — requirements.txt handles Python pinning
+  - DL4006  # "Set SHELL -o pipefail" — branding RUN uses best-effort `|| true` pipes by design
+
+failure-threshold: warning

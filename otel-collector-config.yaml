@@ -1,0 +1,90 @@
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  bearertokenauth:
+    token: ${OTEL_AUTH_TOKEN}
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+        auth:
+          authenticator: bearertokenauth
+      http:
+        endpoint: 0.0.0.0:4318
+        auth:
+          authenticator: bearertokenauth
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+  batch/logs:
+    timeout: 2s
+    send_batch_size: 512
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+  # Claude Code sends user.email as a LOG-RECORD attribute (the resource only
+  # carries service.name/os/host). Lift it to a *resource* attribute so Loki can
+  # index it as a stream label (see loki-config.yaml otlp_config) — this is the
+  # only way to make per-developer Loki queries select a single user's stream
+  # instead of scanning the whole claude-code stream. Records are regrouped by
+  # user.email into one resource each; all other attributes stay on the record
+  # (→ Loki structured metadata). Logs pipeline only — metrics are untouched.
+  groupbyattrs/loki:
+    keys:
+      - user.email
+
+
+  redaction:
+    allow_all_keys: true
+    blocked_values:
+      - "(?i)(password|passwd|secret|webhook[_-]?secret|client[_-]?secret|private[_-]?token|auth[_-]?token|token|api[_-]?key|access[_-]?key|credentials?)\\s*[:=]\\s*['\\x22]?[A-Za-z0-9+/_\\-]{20,}={0,2}"
+      - "(?i)(bearer|token)\\s+[A-Za-z0-9._\\-/+=]{16,}"
+      - "AKIA[0-9A-Z]{16}"                                        # AWS access key IDs
+      - "sk-[A-Za-z0-9_\\-]{20,}"                                 # Anthropic/OpenAI/Stripe
+      - "gl(pat|oas|rt|cbt|dt|soat|imt|agent|ptt)-[A-Za-z0-9_\\-]{20,}"  # GitLab real prefixes only
+      - "gh[posu]_[A-Za-z0-9]{36,}"                               # GitHub (ghp_, gho_, …)
+      - "github_pat_[A-Za-z0-9_]{40,}"                            # GitHub fine-grained PAT
+      - "1000\\.[A-Za-z0-9]{20,}\\.[A-Za-z0-9]{20,}"             # Zoho OAuth tokens
+      - "eyJ[A-Za-z0-9_\\-]+\\.eyJ[A-Za-z0-9_\\-]+\\.[A-Za-z0-9_\\-]+"  # JWTs (MS/Azure/…)
+      - "[A-Za-z0-9+/]{86}=="                                     # Azure Storage keys
+      - "-----BEGIN [A-Z ]*PRIVATE KEY-----"                     # PEM private keys
+    summary: info
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    send_timestamps: true
+    metric_expiration: 180m
+    enable_open_metrics: true
+    resource_to_telemetry_conversion:
+      enabled: true
+
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+
+  debug:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus, debug]
+    logs:
+      receivers: [otlp]
+      # groupbyattrs runs after batch so it compacts a full batch into one
+      # resource per user.email before the OTLP export to Loki.
+      processors: [memory_limiter, batch/logs, redaction, groupbyattrs/loki]
+      exporters: [otlphttp/loki, debug]
+
+  extensions: [health_check, bearertokenauth]
+
+  telemetry:
+    logs:
+      level: "info"

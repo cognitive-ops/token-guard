@@ -1,0 +1,10 @@
+[Unit]
+Description=Run billing-health-metrics every 5 minutes
+
+[Timer]
+OnBootSec=120
+OnUnitActiveSec=300
+AccuracySec=30s
+
+[Install]
+WantedBy=timers.target

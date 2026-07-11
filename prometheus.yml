@@ -1,0 +1,386 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "prometheus-rules.yml"
+
+scrape_configs:
+  # Scrape the OpenTelemetry Collector metrics endpoint
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:8889']
+    metric_relabel_configs:
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;akillion/.+
+      target_label: project_name
+      replacement: Akillion
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;baseball\-card\-market/.+
+      target_label: project_name
+      replacement: Baseball Card Market
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;carrier\-community\-gmbh\-and\-co\-kg/.+
+      target_label: project_name
+      replacement: Carrier Web Portal and Mobile App
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;crain\-communications\-inc/.+
+      target_label: project_name
+      replacement: Crain AI Proposal Generator
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;ken\-meacham\-iaci/.+
+      target_label: project_name
+      replacement: ECS Clinical Chat Application
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;intellisell\-inc/.+
+      target_label: project_name
+      replacement: Intellisel-OSP
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;klowen/.+
+      target_label: project_name
+      replacement: KLOwen Braces
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;Mediphany/.+
+      target_label: project_name
+      replacement: Mediphany AI MVP
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;iron\-sheeks\-holding/.+
+      target_label: project_name
+      replacement: OneKeel XDP
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;pbt\-marketplace/.+
+      target_label: project_name
+      replacement: PBT Marketplace Websites
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;pro\-pics/.+
+      target_label: project_name
+      replacement: Pro Pics
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;sales\-tank/.+
+      target_label: project_name
+      replacement: Sales Tank CRM App
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;rehab\-bookings/.+
+      target_label: project_name
+      replacement: Rehab Angles
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;medcad/.+
+      target_label: project_name
+      replacement: MedCad AI
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;TheDSquaredInitiative/.+
+      target_label: project_name
+      replacement: The Democracy Domain
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;iron\-sheeks\-holding\-werkandme/.+
+      target_label: project_name
+      replacement: WerkandMe
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;maretual\-pty\-ltd/.+
+      target_label: project_name
+      replacement: VoidMapper
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;tabacco\-development/.+
+      target_label: project_name
+      replacement: Tabacco Development
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;the\-attributes/.+
+      target_label: project_name
+      replacement: The Attributes
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;theautominer/.+
+      target_label: project_name
+      replacement: theAutominer
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;lcpo\-holdings\-llc/.+
+      target_label: project_name
+      replacement: Trophy Scan
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;yachtscoring/.+
+      target_label: project_name
+      replacement: Yacht Scoring
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;ell\-inc/.+
+      target_label: project_name
+      replacement: Medical Case Management System
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;mlcommons/.+
+      target_label: project_name
+      replacement: ML Commons
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;orthoselect/.+
+      target_label: project_name
+      replacement: OrthoSelect
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;sketchlist/.+
+      target_label: project_name
+      replacement: SketchList
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;slippers\-studio/.+
+      target_label: project_name
+      replacement: Slippers Studio
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/.+
+      target_label: project_name
+      replacement: Scopic Internal
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;ai\-poc/.+
+      target_label: project_name
+      replacement: Scopic Internal
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/marketing\-microsite
+      target_label: project_name
+      replacement: Marketing Microsite
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/medcad\-ai\-replit\-webapp
+      target_label: project_name
+      replacement: MedCad AI
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/video\-gen\-studio
+      target_label: project_name
+      replacement: AI-powered video editor
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/scopic\-support\-portal
+      target_label: project_name
+      replacement: Scopic Portal
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/scopic\-website\-migration
+      target_label: project_name
+      replacement: Scopic Website v.2
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/seniority\-determination\-tool
+      target_label: project_name
+      replacement: Scopic Scout
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/ai\-risk\-manager
+      target_label: project_name
+      replacement: AI Risk Manager
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/resource\-management\-tool
+      target_label: project_name
+      replacement: Resource Management Tool
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/scopic\-agent\-studio
+      target_label: project_name
+      replacement: Agent Studio
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/vexa\-test\-management
+      target_label: project_name
+      replacement: Vexa
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/zoom\-radar\-customer\-portal
+      target_label: project_name
+      replacement: Zoom Radar
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;scopic\-software/zoomradar\-wordpress
+      target_label: project_name
+      replacement: Zoom Radar
+    # Fallback — MUST stay last. Any repo not matched by a rule above keeps its
+    # raw repository_fullname as project_name, instead of collapsing into a
+    # blank/unlabeled slice. Only fires when project_name is still empty and a
+    # repo is present (regex requires a non-empty repo after the leading ";").
+    - source_labels:
+      - project_name
+      - repository_fullname
+      separator: ;
+      regex: ;(.+)
+      target_label: project_name
+      replacement: $1
+    # Desktop app has no git working directory, so it can never carry a
+    # repository.fullname attribute. Label it explicitly instead of leaving a
+    # blank "Value" slice. Fires only when project_name is still empty.
+    - source_labels:
+      - project_name
+      - service_name
+      separator: ;
+      regex: ;claude-code-desktop
+      target_label: project_name
+      replacement: No Repo/Project - Desktop App
+    # Anything still empty = a CLI (or other) session that never emitted a
+    # repository.fullname attribute (env not loaded at launch). MUST stay last.
+    - source_labels:
+      - project_name
+      regex: ^$
+      target_label: project_name
+      replacement: No Repo/Project - CLI App
+    - source_labels:
+      - repository_fullname
+      - service_name
+      separator: ;
+      regex: ;claude-code-desktop
+      target_label: repository_fullname
+      replacement: No Repo/Project - Desktop App
+    - source_labels:
+      - repository_fullname
+      regex: ^$
+      target_label: repository_fullname
+      replacement: No Repo/Project - CLI App
+    - source_labels:
+      - repository_host
+      - service_name
+      separator: ;
+      regex: ;claude-code-desktop
+      target_label: repository_host
+      replacement: No Repo/Project - Desktop App
+    - source_labels:
+      - repository_host
+      regex: ^$
+      target_label: repository_host
+      replacement: No Repo/Project - CLI App
+
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Scrape the billing exporter (real per-developer cost from the Admin API)
+  - job_name: 'billing-exporter'
+    scrape_interval: 5m
+    static_configs:
+      - targets: ['billing-exporter:9105']
+
+  # Scrape the prompt-language exporter (prompt language detection from Loki)
+  - job_name: 'prompt-lang-exporter'
+    scrape_interval: 5m
+    static_configs:
+      - targets: ['prompt-lang-exporter:9106']
+
+  # Scrape the prompt-intent exporter (intent + behavior classification from Loki)
+  - job_name: 'prompt-intent-exporter'
+    scrape_interval: 5m
+    static_configs:
+      - targets: ['prompt-intent-exporter:9107']
+
+  # Scrape the prompt-tool exporter (tool usage aggregation from Loki)
+  - job_name: 'prompt-tool-exporter'
+    scrape_interval: 5m
+    static_configs:
+      - targets: ['prompt-tool-exporter:9108']
+
+  # Add additional scraping targets here if needed
+  # - job_name: 'your-app'
+  #   static_configs:
+  #     - targets: ['your-app:8080']

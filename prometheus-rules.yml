@@ -1,0 +1,43 @@
+groups:
+  # Maps the per-user hash (user_id) that Claude Code always emits to a human
+  # user_email. The Claude Desktop app frequently emits cost metrics with only
+  # user_id and no user_email, which otherwise collapse into one blank row in the
+  # "Cost by User" panel. This map lets a group_left join re-attach the email by
+  # user_id. It is fully data-driven: the 90d sliding window picks up new users /
+  # new emails automatically on the next evaluation, and stale pairings age out.
+  - name: claude_user_identity
+    interval: 1m
+    rules:
+      # Score every (user_id, user_email) pair observed in the last 90d.
+      # Corporate (@scopicsoftware.com) addresses score 2, any other address
+      # scores 1. The `or` keeps non-corporate pairs that the first term drops.
+      - record: claude_user_email_score
+        expr: |
+          (
+            count by (user_id, user_email) (
+              last_over_time(claude_code_cost_usage_USD_total{user_email=~".+@scopicsoftware\\.com"}[90d])
+            ) * 0 + 2
+          )
+          or
+          (
+            count by (user_id, user_email) (
+              last_over_time(claude_code_cost_usage_USD_total{user_email!=""}[90d])
+            ) * 0 + 1
+          )
+
+      - record: claude_user_email_by_id
+        expr: |
+          (
+            claude_user_email_score
+              == on(user_id) group_left() max by (user_id) (claude_user_email_score)
+          ) * 0 + 1
+
+      # Fallback
+      - record: claude_user_email_by_id
+        labels:
+          user_email: "No Email"
+        expr: |
+          (
+            count by (user_id) (last_over_time(claude_code_cost_usage_USD_total[90d]))
+              unless on(user_id) claude_user_email_by_id
+          ) * 0 + 1

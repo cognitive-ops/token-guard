@@ -1,0 +1,11 @@
+# Versions intentionally unpinned; pin once a working set is confirmed.
+anthropic
+requests
+numpy
+scikit-learn
+torch
+transformers
+onnx
+onnxruntime
+sentence-transformers
+joblib

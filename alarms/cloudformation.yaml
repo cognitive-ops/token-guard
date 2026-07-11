@@ -1,0 +1,484 @@
+# claude-analytics-alarms.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  CloudWatch alarms for the Claude Code Analytics stack (Prometheus/Grafana/Loki/otel
+  on i-0fe9d2092e0ab25cd behind scopic-ai-dev-alb). 17 alarms -> SNS email
+  (5 host/ALB + 8 per-container "down" + 4 billing-exporter health alarms).
+
+Parameters:
+  InstanceId:
+    Type: String
+    Default: i-0fe9d2092e0ab25cd
+    Description: EC2 instance running the claude-analytics stack.
+  AlertEmail:
+    Type: String
+    Default: wayan.w@scopicsoftware.com
+    Description: Email subscribed to the alerts topic (must confirm via emailed link).
+  LoadBalancerDimension:
+    Type: String
+    Default: app/scopic-ai-dev-alb/4c6bfb57056cac07
+    Description: ALB dimension value (ARN suffix) for CloudWatch.
+  GrafanaTargetGroupDimension:
+    Type: String
+    Default: targetgroup/claude-analytics-grafana/f7574042fcd04ac2
+    Description: Grafana target group dimension value (ARN suffix).
+
+Resources:
+
+  # --- Notification channel ---
+  # Customer-managed KMS key for the alerts topic. A CMK (not the AWS-managed
+  # alias/aws/sns) is required so the key policy can grant CloudWatch publish
+  # rights and the key is under our own rotation/audit control.
+  AlertsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Encrypts the claude-analytics alerts SNS topic at rest.
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowAccountAdmin
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource: '*'
+          - Sid: AllowCloudWatchToPublish
+            Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Action:
+              - kms:GenerateDataKey*
+              - kms:Decrypt
+            Resource: '*'
+
+  AlertsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/claude-analytics-alerts
+      TargetKeyId: !Ref AlertsKey
+
+  AlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: claude-analytics-alerts
+      DisplayName: Claude Analytics Alerts
+      # Encrypt at rest with our customer-managed key (AWS-0136).
+      KmsMasterKeyId: !Ref AlertsKey
+
+  AlertsEmailSub:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref AlertsTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+      # Stays 'PendingConfirmation' until the link in the email is clicked.
+
+  # === 1. High Memory (requires CloudWatch Agent -> CWAgent namespace) ===
+  HighMemoryAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-high-memory
+      AlarmDescription: >
+        Host memory > 85% for 5 min. Precursor to the OOM that killed Prometheus.
+        Check 'docker stats'; consider trimming load or scaling.
+      Namespace: CWAgent
+      MetricName: mem_used_percent
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 85
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  # === 2. Swap pressure (requires CloudWatch Agent) ===
+  SwapPressureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-swap-pressure
+      AlarmDescription: >
+        Swap usage > 50% for 10 min. Memory spilling to slow EBS swap; can cause
+        query slowness and precedes OOM. Investigate memory consumers.
+      Namespace: CWAgent
+      MetricName: swap_used_percent
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2   # 2 x 5 min sustained
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 50
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  # === 3. Slow response (ALB metric, no install) ===
+  SlowResponseAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-grafana-slow-response
+      AlarmDescription: >
+        Grafana p95 response time via ALB sustained > 3s (3 of the last 5 five-min
+        periods). On this low-traffic dashboard a single cold page-load runs ~3s and
+        dominates p95, so the window is widened to catch only genuinely sustained
+        slowness. Check Prometheus query latency, CPU/credit balance, memory.
+      Namespace: AWS/ApplicationELB
+      MetricName: TargetResponseTime
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !Ref LoadBalancerDimension
+        - Name: TargetGroup
+          Value: !Ref GrafanaTargetGroupDimension
+      ExtendedStatistic: p95
+      Period: 300
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 3   # 3 of 5 periods -> a single browsing session can't trip it
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 3
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  # === 4. Target Unhealthy (ALB metric, no install) ===
+  TargetUnhealthyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-grafana-target-unhealthy
+      AlarmDescription: >
+        Grafana target unhealthy (>=1) for 3 min. The instance/container is not
+        passing ALB health checks.
+      Namespace: AWS/ApplicationELB
+      MetricName: UnHealthyHostCount
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !Ref LoadBalancerDimension
+        - Name: TargetGroup
+          Value: !Ref GrafanaTargetGroupDimension
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 3
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  # === 5. Disk filling (requires CloudWatch Agent) ===
+  DiskFillingAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-disk-filling
+      AlarmDescription: >
+        Root disk > 85%. Relevant given 3650d Prometheus retention growth.
+        Plan volume expansion or retention review.
+      Namespace: CWAgent
+      MetricName: disk_used_percent
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+        - Name: path
+          Value: "/"
+        - Name: fstype
+          Value: xfs
+        # 'device' dim is dropped via "drop_device": true in the agent config.
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 85
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  # === 6-13. Per-container "down" alarms ====================================
+  # Watch the ContainerUp (1/0) metric published every minute by
+  # alarms/container-health-metrics.sh on the host. Fire if a container is down
+  # for 3 consecutive minutes (rides through normal `docker-compose up -d`
+  # restarts). TreatMissingData: breaching -> if the producer script or the box
+  # itself dies, the gap also alarms. Keep this list in sync with the script.
+
+  PrometheusContainerDownAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-container-down-prometheus
+      AlarmDescription: Container 'prometheus' down for 3 min (ContainerUp < 1), or its metric stopped publishing.
+      Namespace: ClaudeAnalytics/Containers
+      MetricName: ContainerUp
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+        - Name: Container
+          Value: prometheus
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  LokiContainerDownAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-container-down-loki
+      AlarmDescription: Container 'loki' down for 3 min (ContainerUp < 1), or its metric stopped publishing.
+      Namespace: ClaudeAnalytics/Containers
+      MetricName: ContainerUp
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+        - Name: Container
+          Value: loki
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  GrafanaContainerDownAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-container-down-grafana
+      AlarmDescription: Container 'grafana' down for 3 min (ContainerUp < 1), or its metric stopped publishing.
+      Namespace: ClaudeAnalytics/Containers
+      MetricName: ContainerUp
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+        - Name: Container
+          Value: grafana
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  OtelCollectorContainerDownAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-container-down-otel-collector
+      AlarmDescription: Container 'otel-collector' down for 3 min (ContainerUp < 1), or its metric stopped publishing.
+      Namespace: ClaudeAnalytics/Containers
+      MetricName: ContainerUp
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+        - Name: Container
+          Value: otel-collector
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  BillingExporterContainerDownAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-container-down-billing-exporter
+      AlarmDescription: Container 'billing-exporter' down for 3 min (ContainerUp < 1), or its metric stopped publishing.
+      Namespace: ClaudeAnalytics/Containers
+      MetricName: ContainerUp
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+        - Name: Container
+          Value: billing-exporter
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  PromptLangExporterContainerDownAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-container-down-prompt-lang-exporter
+      AlarmDescription: Container 'prompt-lang-exporter' down for 3 min (ContainerUp < 1), or its metric stopped publishing.
+      Namespace: ClaudeAnalytics/Containers
+      MetricName: ContainerUp
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+        - Name: Container
+          Value: prompt-lang-exporter
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  PromptIntentExporterContainerDownAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-container-down-prompt-intent-exporter
+      AlarmDescription: Container 'prompt-intent-exporter' down for 3 min (ContainerUp < 1), or its metric stopped publishing.
+      Namespace: ClaudeAnalytics/Containers
+      MetricName: ContainerUp
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+        - Name: Container
+          Value: prompt-intent-exporter
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  WebContainerDownAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-container-down-web
+      AlarmDescription: Container 'web' (claude-roi-web) down for 3 min (ContainerUp < 1), or its metric stopped publishing.
+      Namespace: ClaudeAnalytics/Containers
+      MetricName: ContainerUp
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+        - Name: Container
+          Value: web
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  # === 14-17. Billing-exporter health =======================================
+  # Watch the signals published every 5 min by alarms/billing-health-metrics.sh
+  # (the script *produces* them from Prometheus; these alarms only *watch*).
+  # This is about the cost pipeline being healthy/fresh, not the cost being high.
+
+  BillingExporterErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-billing-exporter-error
+      AlarmDescription: >
+        Billing exporter's last poll failed (ExporterErrors >= 1) for 3 of the
+        last 3 samples, or the health metric stopped publishing. The Real Cost
+        figure may be stale/wrong. Check `docker logs billing-exporter`.
+      Namespace: ClaudeAnalytics/Billing
+      MetricName: ExporterErrors
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      TreatMissingData: breaching   # producer/Prometheus gap is itself a problem
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  BillingExporterStaleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-billing-exporter-stale
+      AlarmDescription: >
+        No successful billing poll in over 24h (StalenessSeconds > 86400). The
+        poll interval is 6h, so 24h means several polls in a row have failed and
+        the cost figure is going stale. Check the exporter and the Admin API key.
+      Namespace: ClaudeAnalytics/Billing
+      MetricName: StalenessSeconds
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 86400   # 24h; poll interval is 6h
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  BillingSilentZeroAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-billing-silent-zero
+      AlarmDescription: >
+        Service Key Billed reads $0 while real workspace spend exists
+        (SilentZeroServiceCost >= 1) for 30 min. This is the exact silent
+        failure that hid ~$760 of API spend: service_workspace_ids is likely
+        empty or misconfigured in the roster. See issue #15.
+      Namespace: ClaudeAnalytics/Billing
+      MetricName: SilentZeroServiceCost
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 6
+      DatapointsToAlarm: 6
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      TreatMissingData: notBreaching   # can't compute -> don't page
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  BillingUncategorizedWorkspaceAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: claude-analytics-billing-uncategorized-workspace
+      AlarmDescription: >
+        One or more workspaces billed over the floor are in neither the Claude
+        Code list (service_workspace_ids) nor the known-product list
+        (known_product_ids) for 30 min. A new/unclassified workspace appeared, so
+        Service Key Billed may be mis-attributed until someone classifies it into
+        the right list. Drift guard for issue #15.
+      Namespace: ClaudeAnalytics/Billing
+      MetricName: UncategorizedWorkspaces
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 6
+      DatapointsToAlarm: 6
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      TreatMissingData: notBreaching   # can't compute -> don't page
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+Outputs:
+  AlertsTopicArn:
+    Description: SNS topic ARN for the alarms.
+    Value: !Ref AlertsTopic

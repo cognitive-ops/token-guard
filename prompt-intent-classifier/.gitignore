@@ -1,0 +1,6 @@
+# Ignore all data files, but keep directory structure and DVC pointer (.dvc)
+# files so DVC-tracked artifacts can be versioned in git (data itself lives in
+# the DVC remote, never in git).
+/data/**
+!/data/**/
+!/data/**/*.dvc

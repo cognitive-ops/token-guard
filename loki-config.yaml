@@ -1,0 +1,84 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  http_server_read_timeout: 300s
+  http_server_write_timeout: 300s
+
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: "2024-01-01"
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+limits_config:
+  retention_period: 87600h   # 10y (was 2160h / 90d, 720h / 30d) — preserve prompt logs for classifier retraining
+  allow_structured_metadata: true
+  volume_enabled: true
+  # Allow back-writing classified prompt events at their original timestamps
+  # (up to the retention window) so intent/behavior panels honor the time picker.
+  reject_old_samples: false
+  max_query_length: 2200h
+  query_timeout: 600s
+  split_queries_by_interval: 24h
+  # Split long-window *instant* metric queries (e.g. the per-developer
+  # `sum(count_over_time(... [30d]))` prompt count) into 24h sub-queries so they
+  # parallelize and reuse the per-day instant-metric results cache below. Without
+  # this, a [30d] instant query is evaluated as one un-cacheable scan (~5s).
+  split_instant_metric_queries_by_interval: 24h
+  # Promote `user.email` (a log-record attribute, lifted to a resource attribute
+  # by the otel-collector `groupbyattrs/loki` processor) to a Loki *index label*.
+  # A per-developer query then selects only that user's stream
+  # (`{service_name="claude-code", user_email="X"}`) instead of scanning the whole
+  # claude-code stream (~240MB/30d) and CPU-filtering on structured metadata.
+  # Defaults (service.name, …) are kept; user_email is additive. Cardinality is
+  # tiny (≈47 users × a handful of services). Only affects newly-ingested logs.
+  otlp_config:
+    resource_attributes:
+      attributes_config:
+        - action: index_label
+          attributes:
+            - user.email
+
+# Cache query results so the heavy count_over_time scans aren't recomputed on
+# every dashboard load. Completed 24h splits are immutable and shared across all
+# overlapping time ranges (30d/90d all reuse the same daily splits), so repeats
+# drop from seconds to sub-second; only the current partial day is recomputed.
+query_range:
+  # Align query boundaries to the step so the shifting `now` doesn't bust the
+  # cache key every request.
+  align_queries_with_step: true
+  # Range queries (the "over time" charts).
+  cache_results: true
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 256
+  # Instant metric queries (the leaderboard / KPI count_over_time calls).
+  cache_instant_metric_results: true
+  instant_metric_results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 128
+
+compactor:
+  working_directory: /loki/compactor
+  retention_enabled: true
+  delete_request_store: filesystem

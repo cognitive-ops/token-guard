@@ -1,0 +1,175 @@
+{
+  "uid": "scopic-prompt-explorer",
+  "title": "Prompt Explorer — User Prompts (local only)",
+  "tags": ["claude-code", "prompts", "local"],
+  "editable": true,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "",
+  "time": { "from": "now-7d", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Data source",
+        "query": "loki",
+        "refresh": 1,
+        "hide": 0,
+        "current": {}
+      },
+      {
+        "name": "user",
+        "type": "textbox",
+        "label": "User (email contains)",
+        "query": "",
+        "current": { "text": "", "value": "" },
+        "options": [{ "text": "", "value": "", "selected": true }]
+      },
+      {
+        "name": "search",
+        "type": "textbox",
+        "label": "Prompt contains",
+        "query": "",
+        "current": { "text": "", "value": "" },
+        "options": [{ "text": "", "value": "", "selected": true }]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "text",
+      "title": "",
+      "id": 1,
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "transparent": true,
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;align-items:center;gap:16px;padding:6px 2px;border-bottom:2px solid #017AFF;\"><span style=\"color:#017AFF;font-size:20px;font-weight:700;letter-spacing:.2px;\">Prompt Explorer</span><span style=\"color:#8a93a2;font-size:13px;margin-left:auto;text-align:right;\">LOCAL ONLY · via SSM port-forward &nbsp;·&nbsp; <span style=\"color:#c08a2a;\">Contains real prompt text — do not deploy to shared Grafana</span></span></div>"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Prompts (selected range / user)",
+      "id": 2,
+      "datasource": { "type": "loki", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 3 },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "color": { "mode": "fixed", "fixedColor": "#017AFF" } },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "area", "textMode": "value" },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${datasource}" },
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=`user_prompt` | user_email=~`(?i).*$user.*` [$__range]))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Active users (range)",
+      "id": 3,
+      "datasource": { "type": "loki", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 3 },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "color": { "mode": "fixed", "fixedColor": "#2aa198" } },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "none", "textMode": "value" },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${datasource}" },
+          "expr": "count(sum by (user_email) (count_over_time({service_name=\"claude-code\"} | event_name=`user_prompt` | user_email=~`.+` [$__range])))",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Prompts over time",
+      "id": 4,
+      "datasource": { "type": "loki", "uid": "${datasource}" },
+      "gridPos": { "h": 5, "w": 12, "x": 12, "y": 3 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "bars", "fillOpacity": 40, "lineWidth": 1, "stacking": { "mode": "normal" } },
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${datasource}" },
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=`user_prompt` | user_email=~`(?i).*$user.*` [$__auto]))",
+          "legendFormat": "prompts",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Prompts by user",
+      "id": 5,
+      "datasource": { "type": "loki", "uid": "${datasource}" },
+      "gridPos": { "h": 14, "w": 8, "x": 0, "y": 8 },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "filterable": true }, "color": { "mode": "thresholds" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Prompts" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } },
+              { "id": "color", "value": { "mode": "continuous-BlPu" } }
+            ]
+          }
+        ]
+      },
+      "options": { "showHeader": true, "sortBy": [{ "displayName": "Prompts", "desc": true }] },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${datasource}" },
+          "expr": "sum by (user_email) (count_over_time({service_name=\"claude-code\"} | event_name=`user_prompt` | user_email=~`.+` [$__range]))",
+          "queryType": "instant",
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "user_email": "User", "Value": "Prompts" } } },
+        { "id": "sortBy", "options": { "fields": "", "sort": [{ "field": "Prompts", "desc": true }] } }
+      ]
+    },
+    {
+      "type": "logs",
+      "title": "Prompts (newest first) — expand a row for user / session / repo",
+      "id": 6,
+      "datasource": { "type": "loki", "uid": "${datasource}" },
+      "gridPos": { "h": 14, "w": 16, "x": 8, "y": 8 },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "${datasource}" },
+          "expr": "{service_name=\"claude-code\"} | event_name=`user_prompt` | user_email=~`(?i).*$user.*` | prompt=~`(?i).*$search.*` | line_format `{{.prompt}}`",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "base": "xlm-roberta-base",
+  "sep": " >>> ",
+  "maxlen": 256,
+  "intents": [
+    "build",
+    "investigate",
+    "ops",
+    "test",
+    "other"
+  ],
+  "behaviors": [
+    "well-specified",
+    "underspecified",
+    "stuck-looping",
+    "verifies-output",
+    "scope-expansion"
+  ],
+  "source_model": "model_coarse_mt_xlm-roberta-base.pt",
+  "behavior_thresholds": {
+    "well-specified": 0.46,
+    "underspecified": 0.52,
+    "stuck-looping": 0.76,
+    "verifies-output": 0.8,
+    "scope-expansion": 0.7
+  }
+}

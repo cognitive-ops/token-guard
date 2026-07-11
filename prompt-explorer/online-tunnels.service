@@ -1,0 +1,16 @@
+[Unit]
+Description=Scopic AI Analytics — online data SSM tunnels + relay (self-healing)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# adjust the path if your checkout lives elsewhere
+WorkingDirectory=%h/Workspaces/claude-code-roi-analytics/prompt-explorer
+ExecStart=/usr/bin/env bash %h/Workspaces/claude-code-roi-analytics/prompt-explorer/online-tunnels.sh
+Environment=AWS_PROFILE=scopic-ml-development
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,5 @@
+{
+  "env": {
+    "OTEL_RESOURCE_ATTRIBUTES": "repository.fullname=scopic-software/claude-code-roi-analytics,repository.host=gitea"
+  }
+}

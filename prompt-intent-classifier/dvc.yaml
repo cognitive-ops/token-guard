@@ -1,0 +1,35 @@
+# Reproducible data pipeline for the prompt-intent classifier.
+#
+#   raw (sensitive)  --clean-->  interim (sensitive)  --scrub-->  processed (SAFE)
+#
+# Data-acquisition (Stage 0) is a MANUAL prerequisite, not a dvc stage, because
+# it needs a prod SSM tunnel to Loki:
+#     python src/extract_prompts_full.py    # -> data/raw/loki_prompts.jsonl
+# plus dropping any restored backup dumps into data/raw/*.jsonl.
+#
+# Sensitive-data policy (see also .dvcignore):
+#   * data/raw/**            : deps only, NEVER a tracked out -> never cached/pushed.
+#   * data/interim/clean.jsonl : out with `cache: false` -> may contain secrets,
+#                                stays local, never pushed to a DVC remote.
+#   * data/processed/**      : gitleaks-scrubbed, secret-free -> cached & safe to push.
+# Only `dvc push` the processed outputs; raw/interim never leave the machine.
+
+stages:
+  clean:
+    cmd: python src/clean_dataset.py
+    deps:
+      - src/clean_dataset.py
+      - src/preprocess.py
+      - data/raw
+    outs:
+      - data/interim/clean.jsonl:
+          cache: false        # sensitive (pre-secret-scrub) — do not cache/push
+
+  scrub:
+    cmd: python src/scrub_secrets.py
+    deps:
+      - src/scrub_secrets.py
+      - data/interim/clean.jsonl
+    outs:
+      - data/processed/labelable.jsonl              # secret-free — safe to cache/push
+      - data/processed/secret_quarantine_ids.txt    # audit: prompt_ids only, no secrets

@@ -1,0 +1,27 @@
+apiVersion: 1
+
+# Two Loki sources so you can flip the dashboard's "Data source" dropdown between them.
+#   - online: the production Loki on the server, reached over the SSM port-forward
+#   - local : a Loki running on your machine (e.g. the repo's own docker-compose stack,
+#             or seeded demo data). Point LOCAL_LOKI_URL wherever it lives.
+# URLs come from env (set in docker-compose.yml) so nothing is hard-coded.
+datasources:
+  - name: "Loki (online · prod via SSM)"
+    type: loki
+    uid: loki-online
+    access: proxy
+    url: $ONLINE_LOKI_URL
+    isDefault: true
+    editable: false
+    jsonData:
+      maxLines: 1000
+
+  - name: "Loki (local)"
+    type: loki
+    uid: loki-local
+    access: proxy
+    url: $LOCAL_LOKI_URL
+    isDefault: false
+    editable: false
+    jsonData:
+      maxLines: 1000
