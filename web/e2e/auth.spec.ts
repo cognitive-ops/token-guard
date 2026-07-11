@@ -15,7 +15,7 @@ test.describe("Auth (Keycloak + local login)", () => {
 
   test("login page shows the local sign-in form", async ({ page }) => {
     await page.goto("/login");
-    await expect(page.getByRole("img", { name: "Scopic" })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Token Guard" })).toBeVisible();
     await expect(page.locator('input[name="username"]')).toBeVisible();
     await expect(page.locator('input[name="password"]')).toBeVisible();
     await expect(

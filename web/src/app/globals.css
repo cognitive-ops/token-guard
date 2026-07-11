@@ -6,7 +6,7 @@
 /*
  * Semantic color tokens as CSS variables so the whole UI flips between themes
  * at runtime. Light is the default (:root); .dark overrides. Both palettes are
- * tuned for contrast/visibility, Scopic-blue led.
+ * tuned for contrast/visibility, Token Guard-blue led.
  */
 :root {
   --color-bg: #f5f7fb;

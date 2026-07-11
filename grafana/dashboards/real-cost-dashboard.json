@@ -22,7 +22,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Scopic AI Usage Analytics \u2014 Real Cost",
+  "title": "Token Guard AI Usage Analytics \u2014 Real Cost",
   "uid": "claude-real-cost",
   "version": 3,
   "weekStart": "",
@@ -47,7 +47,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "<div style=\"display:flex;align-items:center;gap:16px;padding:6px 2px;border-bottom:2px solid #017AFF;\"><img src=\"/public/img/scopic-logo.webp\" height=\"30\" alt=\"Scopic\"/><span style=\"color:#017AFF;font-size:20px;font-weight:700;letter-spacing:.2px;\">Scopic AI Usage Analytics</span><span style=\"color:#8a93a2;font-size:14px;margin-left:auto;\">Real Cost</span></div>",
+        "content": "<div style=\"display:flex;align-items:center;gap:16px;padding:6px 2px;border-bottom:2px solid #017AFF;\"><img src=\"/public/img/scopic-logo.webp\" height=\"30\" alt=\"Token Guard\"/><span style=\"color:#017AFF;font-size:20px;font-weight:700;letter-spacing:.2px;\">Token Guard AI Usage Analytics</span><span style=\"color:#8a93a2;font-size:14px;margin-left:auto;\">Real Cost</span></div>",
         "mode": "html"
       },
       "transparent": true

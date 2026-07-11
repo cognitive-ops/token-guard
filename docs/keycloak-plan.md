@@ -60,7 +60,7 @@ All values come from `.env`; OAuth is gated off (`KEYCLOAK_ENABLED=false`) until
 
 ```
 GF_AUTH_GENERIC_OAUTH_ENABLED=${KEYCLOAK_ENABLED:-false}
-GF_AUTH_GENERIC_OAUTH_NAME=Scopic SSO
+GF_AUTH_GENERIC_OAUTH_NAME=Token Guard SSO
 GF_AUTH_GENERIC_OAUTH_CLIENT_ID=${KEYCLOAK_CLIENT_ID}          # claude-code-analytics
 GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
 GF_AUTH_GENERIC_OAUTH_SCOPES=openid email profile roles
@@ -127,7 +127,7 @@ incognito window) so a fresh token is minted.
 
 ## Verification checklist (tested on server, 2026-06-09)
 
-- [x] "Sign in with Scopic SSO" button present on the login page.
+- [x] "Sign in with Token Guard SSO" button present on the login page.
 - [x] `grafana-admin` user → Admin in Grafana.
 - [x] `grafana-viewer` user → Viewer (read-only).
 - [x] User with no role → denied (deny-by-default, strict mode).

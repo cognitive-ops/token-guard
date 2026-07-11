@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Real Cost dashboard", () => {
   test("renders the shell, logo, and header", async ({ page }) => {
     await page.goto("/real-cost");
-    await expect(page.getByRole("banner").getByRole("img", { name: "Scopic" })).toBeVisible();
+    await expect(page.getByRole("banner").getByRole("img", { name: "Token Guard" })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Real Cost/i, level: 1 })).toBeVisible();
   });
 

@@ -12,7 +12,7 @@ import {
 } from "./sections";
 import { PanelSkeleton, GridSkeleton } from "./skeletons";
 
-export const metadata = { title: "Usage Patterns · Scopic Claude Analytics" };
+export const metadata = { title: "Usage Patterns · Token Guard Claude Analytics" };
 export const dynamic = "force-dynamic";
 
 export default async function UsagePatternsPage({

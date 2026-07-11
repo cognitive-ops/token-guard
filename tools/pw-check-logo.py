@@ -37,7 +37,7 @@ with sync_playwright() as p:
         pass
     pg.wait_for_timeout(1500)
 
-    # --- a dashboard (open the Scopic working dashboard, 24h range) ---
+    # --- a dashboard (open the Token Guard working dashboard, 24h range) ---
     pg.goto(f"{BASE}/d/claude-code-working?from=now-24h&to=now", wait_until="networkidle")
     pg.wait_for_timeout(4000)
     pg.screenshot(path="/tmp/grafana_dash.png", full_page=False)

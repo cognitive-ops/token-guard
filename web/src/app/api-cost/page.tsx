@@ -5,7 +5,7 @@ import { currentMonth, recentMonths } from "@/lib/data/api-cost";
 import { ApiCostSection } from "./sections";
 import { KpiSkeleton } from "./skeletons";
 
-export const metadata = { title: "API Cost · Scopic Claude Analytics" };
+export const metadata = { title: "API Cost · Token Guard Claude Analytics" };
 export const dynamic = "force-dynamic";
 
 export default async function ApiCostPage({

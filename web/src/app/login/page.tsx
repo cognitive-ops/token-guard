@@ -4,7 +4,7 @@ import { AuthError } from "next-auth";
 import { signIn, auth } from "@/auth";
 import { authConfig, keycloakReady } from "@/lib/auth-config";
 
-export const metadata = { title: "Sign in · Scopic Claude Analytics" };
+export const metadata = { title: "Sign in · Token Guard Claude Analytics" };
 
 export default async function LoginPage({
   searchParams,
@@ -47,7 +47,7 @@ export default async function LoginPage({
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <Image
             src="/scopic-logo.webp"
-            alt="Scopic"
+            alt="Token Guard"
             width={160}
             height={57}
             priority
@@ -74,7 +74,7 @@ export default async function LoginPage({
               type="submit"
               className="flex w-full items-center justify-center gap-2 rounded-md bg-[var(--color-scopic)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-scopic-light)]"
             >
-              Sign in with Scopic SSO
+              Sign in with Token Guard SSO
             </button>
           </form>
         )}

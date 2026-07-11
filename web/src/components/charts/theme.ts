@@ -1,12 +1,12 @@
 /**
  * Shared ECharts palette + per-mode theme objects so charts read as one
- * professional, Scopic-blue family and stay legible in both light and dark.
+ * professional, Token Guard-blue family and stay legible in both light and dark.
  */
-// Categorical palette — a refined, professional set anchored on Scopic blue.
+// Categorical palette — a refined, professional set anchored on Token Guard blue.
 // Moderately-saturated, harmonious hues (not neon), ordered so ADJACENT series
 // alternate across the wheel and stay legible in both light and dark.
 export const PALETTE = [
-  "#3667d6", // blue (Scopic primary)
+  "#3667d6", // blue (Token Guard primary)
   "#2bb6a6", // teal
   "#7a5cf0", // indigo
   "#e8a13c", // amber

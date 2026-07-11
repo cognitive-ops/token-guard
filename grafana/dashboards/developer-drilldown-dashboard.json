@@ -1,11 +1,11 @@
 {
   "uid": "scopic-dev-drilldown",
-  "title": "Scopic AI Usage Analytics \u2014 Developer",
+  "title": "Token Guard AI Usage Analytics \u2014 Developer",
   "tags": [
     "claude-code",
     "per-user",
     "drilldown",
-    "scopic"
+    "token-guard"
   ],
   "editable": true,
   "schemaVersion": 39,
@@ -64,7 +64,7 @@
       },
       "options": {
         "mode": "html",
-        "content": "<div style=\"display:flex;align-items:center;gap:16px;padding:6px 2px;border-bottom:2px solid #017AFF;\"><img src=\"/public/img/scopic-logo.webp\" height=\"30\"/><span style=\"color:#017AFF;font-size:20px;font-weight:700;\">Scopic AI Usage Analytics</span><span style=\"color:#8a93a2;font-size:14px;margin-left:auto;\">Developer &nbsp;\u00b7&nbsp; $user</span></div>"
+        "content": "<div style=\"display:flex;align-items:center;gap:16px;padding:6px 2px;border-bottom:2px solid #017AFF;\"><img src=\"/public/img/scopic-logo.webp\" height=\"30\"/><span style=\"color:#017AFF;font-size:20px;font-weight:700;\">Token Guard AI Usage Analytics</span><span style=\"color:#8a93a2;font-size:14px;margin-left:auto;\">Developer &nbsp;\u00b7&nbsp; $user</span></div>"
       },
       "id": 1
     },

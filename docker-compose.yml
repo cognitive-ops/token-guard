@@ -125,7 +125,7 @@ services:
     restart: unless-stopped
     mem_limit: 1536m
 
-  # Grafana (dashboards) — built from grafana/Dockerfile for Scopic title branding
+  # Grafana (dashboards) — built from grafana/Dockerfile for Token Guard title branding
   grafana:
     build: ./grafana
     container_name: grafana
@@ -138,7 +138,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${DASHBOARD_PASSWORD:-admin}
       - GF_SERVER_ROOT_URL=https://grafana.claude-analytics.scopicdev.com
       - GF_SERVER_SERVE_FROM_SUB_PATH=false
-      # allow the Scopic logo <img> in dashboard text panels
+      # allow the Token Guard logo <img> in dashboard text panels
       - GF_PANELS_DISABLE_SANITIZE_HTML=true
       # hide the "Grafana vX.Y" version string on the (unauthenticated) login page
       - GF_AUTH_ANONYMOUS_HIDE_VERSION=true
@@ -152,7 +152,7 @@ services:
       - GF_NEWS_NEWS_FEED_ENABLED=false
       # Keycloak SSO (OIDC)
       - GF_AUTH_GENERIC_OAUTH_ENABLED=${KEYCLOAK_ENABLED:-false}
-      - GF_AUTH_GENERIC_OAUTH_NAME=Scopic SSO
+      - GF_AUTH_GENERIC_OAUTH_NAME=Token Guard SSO
       - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-}
       - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:-}
       - GF_AUTH_GENERIC_OAUTH_SCOPES=openid email profile roles
@@ -169,7 +169,7 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dashboards:/var/lib/grafana/dashboards
-      # Scopic logo for the in-dashboard header text panels (served at /public/img/).
+      # Token Guard logo for the in-dashboard header text panels (served at /public/img/).
       # The favicon + nav/login logo are baked into the image (grafana/Dockerfile).
       - ./scopic-logo.webp:/usr/share/grafana/public/img/scopic-logo.webp:ro
       - ./scopic-icon.png:/usr/share/grafana/public/img/scopic-icon.png:ro

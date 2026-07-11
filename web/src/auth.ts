@@ -7,7 +7,7 @@ import { authConfig, keycloakReady } from "@/lib/auth-config";
  * NextAuth (Auth.js v5) instance.
  *
  * Providers are assembled conditionally:
- * - Keycloak OIDC — only when fully configured (Scopic SSO button).
+ * - Keycloak OIDC — only when fully configured (Token Guard SSO button).
  * - Credentials — the local break-glass login (always available unless
  *   disabled), validated against LOCAL_USERNAME / LOCAL_PASSWORD.
  *

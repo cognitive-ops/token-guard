@@ -6,7 +6,7 @@ import { ThemeSwitcher } from "./theme-switcher";
 import { UserMenu } from "./user-menu";
 
 /**
- * Shared application shell: sticky top bar with the Scopic logo, dashboard
+ * Shared application shell: sticky top bar with the Token Guard logo, dashboard
  * tabs, an optional controls slot (time picker / user select), the theme
  * switcher, and the auth user menu. Wraps every dashboard page.
  */
@@ -21,10 +21,10 @@ export function AppShell({
     <>
       <header className="sticky top-0 z-30 border-b border-[var(--color-panel-border)] bg-[var(--color-bg)]/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
-          <Link href="/overview" className="flex shrink-0 items-center gap-2" aria-label="Scopic Claude Analytics">
+          <Link href="/overview" className="flex shrink-0 items-center gap-2" aria-label="Token Guard Claude Analytics">
             <Image
               src="/scopic-icon.png"
-              alt="Scopic"
+              alt="Token Guard"
               width={256}
               height={256}
               priority
@@ -32,7 +32,7 @@ export function AppShell({
               className="h-7 w-7 rounded-md"
             />
             <span className="whitespace-nowrap text-sm font-semibold tracking-tight text-[var(--color-text)]">
-              Scopic Claude Analytics
+              Token Guard Claude Analytics
             </span>
           </Link>
           <div className="hidden md:block">

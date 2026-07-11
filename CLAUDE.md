@@ -1,6 +1,6 @@
 # Claude Code ROI Analytics
 
-Self-hosted analytics for Scopic's Claude Code usage. Claude Code emits OpenTelemetry
+Self-hosted analytics for Token Guard's Claude Code usage. Claude Code emits OpenTelemetry
 metrics + logs → an OTEL Collector fans them out to **Prometheus** (metrics) and **Loki**
 (events/logs) → two dashboard frontends read from those: **Grafana** and a **Next.js** app.
 

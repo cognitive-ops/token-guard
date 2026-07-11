@@ -74,7 +74,7 @@ to a separate transport.
 - **Pinned third-party image versions.** `otel-collector`, `prometheus`, `loki`, and the
   grafana base image are pinned in compose and pulled from Docker Hub. Version bumps are
   manual (compose edit on the box).
-- **The grafana custom image.** `grafana/Dockerfile` (Scopic branding — logos, title,
+- **The grafana custom image.** `grafana/Dockerfile` (Token Guard branding — logos, title,
   favicons) is **not** rebuilt or pushed. Branding changes need a manual `docker build`.
 - **Secrets / box state.** The box's `.env` (`OTEL_AUTH_TOKEN`, `KEYCLOAK_*`,
   `DASHBOARD_*`) and `.secrets/admin-key` are never touched — secrets stay on the box.

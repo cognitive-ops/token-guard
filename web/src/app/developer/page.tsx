@@ -15,7 +15,7 @@ import {
 } from "./sections";
 import { KpiSkeleton, GridSkeleton, PanelSkeleton } from "./skeletons";
 
-export const metadata = { title: "Developer · Scopic Claude Analytics" };
+export const metadata = { title: "Developer · Token Guard Claude Analytics" };
 export const dynamic = "force-dynamic";
 
 export default async function DeveloperPage({

@@ -3,7 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: "Scopic Claude Analytics",
+  title: "Token Guard Claude Analytics",
   description: "Claude Code ROI analytics over Prometheus + Loki",
 };
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Comprehensive Playwright test of the Scopic-branded Grafana stack (clean browser)."""
+"""Comprehensive Playwright test of the Token Guard-branded Grafana stack (clean browser)."""
 
 import os
 
@@ -9,7 +9,7 @@ USER = os.environ["DASHBOARD_USERNAME"]
 PW = os.environ["DASHBOARD_PASSWORD"]
 BASE = "http://localhost:3000"
 DASH = [
-    ("claude-code-working", "Scopic AI Usage Analytics"),
+    ("claude-code-working", "Token Guard AI Usage Analytics"),
     ("claude-real-cost", "Real Cost"),
     ("claude-hooks-metrics", "Engineering Metrics"),
 ]
@@ -30,8 +30,8 @@ with sync_playwright() as p:
     print("=== LOGIN PAGE ===")
     print("  tab title         :", pg.title())
     print("  logo asset         :", logo_src)
-    print("  logo is Scopic     :", "data:image/png;base64" in logo_body)
-    print("  'Welcome to Scopic':", "Welcome to Scopic" in body)
+    print("  logo is Token Guard:", "data:image/png;base64" in logo_body)
+    print("  'Welcome to Token Guard':", "Welcome to Token Guard" in body)
     print("  'Grafana' visible  :", "Grafana" in body, "(footer links still link to grafana.com)")
     print("  version string     :", "shown" if "Grafana v" in body else "hidden")
 

@@ -10,7 +10,7 @@ import {
 } from "./sections";
 import { KpiSkeleton, PanelSkeleton, GridSkeleton } from "./skeletons";
 
-export const metadata = { title: "Real Cost · Scopic Claude Analytics" };
+export const metadata = { title: "Real Cost · Token Guard Claude Analytics" };
 export const dynamic = "force-dynamic";
 
 export default async function RealCostPage({

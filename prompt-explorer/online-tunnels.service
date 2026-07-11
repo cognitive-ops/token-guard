@@ -1,5 +1,5 @@
 [Unit]
-Description=Scopic AI Analytics — online data SSM tunnels + relay (self-healing)
+Description=Token Guard AI Analytics — online data SSM tunnels + relay (self-healing)
 After=network-online.target docker.service
 Wants=network-online.target
 
