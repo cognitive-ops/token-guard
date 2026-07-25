@@ -5,6 +5,7 @@ import {
   getCraftStats,
   getPerDevTables,
   getPromptVolume,
+  getRefactorStats,
   type LeaderboardRow,
   type TwoLabelRow,
 } from "@/lib/data/usage-patterns";
@@ -12,6 +13,7 @@ import { formatUsd, formatCompact, formatInt } from "@/lib/format";
 import { KpiCard } from "@/components/kpi-card";
 import { Panel, SectionHeading } from "@/components/ui/card";
 import { DataGrid, type Column } from "@/components/data-grid";
+import type { LabelledValue } from "@/lib/prometheus/reduce";
 import {
   LazyDonutChart,
   LazyBarChart,
@@ -125,6 +127,47 @@ export async function PromptVolumeSection({ token }: { token: string }) {
         </Panel>
         <Panel title="Prompt language distribution" info={M.promptLanguage}>
           <LazyDonutChart data={d.promptLanguage} ariaLabel="Prompt language distribution" />
+        </Panel>
+      </div>
+    </>
+  );
+}
+
+// --- Prompt refactoring linter ---
+
+export async function RefactorSection({ token }: { token: string }) {
+  const rs = await getRefactorStats(token);
+  const overall = rs.scoresByAxis.find((s) => s.label === "overall")?.value ?? 0;
+  const columns: Column<LabelledValue>[] = [
+    { key: "label", header: "Developer", render: (r) => <span className="font-mono text-xs">{r.label || "(none)"}</span> },
+    { key: "value", header: "Rephrase pairs", align: "right", render: (r) => formatInt(r.value) },
+  ];
+  return (
+    <>
+      <SectionHeading
+        title="Prompt refactoring"
+        hint="rule-based lint score · same-session rephrase pairs · estimated savings"
+      />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <KpiCard label="Rephrase pairs" value={formatInt(rs.pairsTotal)} info={M.refactorPairs} />
+        <KpiCard
+          label="Est. $ saved"
+          value={formatUsd(rs.savedUsdEstimate)}
+          hint="estimated from token-count delta, not measured"
+          accent="var(--color-good)"
+          info={M.refactorSavedUsd}
+        />
+        <KpiCard
+          label="Est. latency saved"
+          value={`${rs.savedSecondsEstimate.toFixed(0)}s`}
+          hint="estimated, not measured"
+          info={M.refactorSavedSeconds}
+        />
+        <KpiCard label="Avg overall score" value={overall.toFixed(0)} hint="0-100, rule-based" info={M.refactorScore} />
+      </div>
+      <div className="mt-4">
+        <Panel title="Top rephrasers" info={M.refactorTopRephrasers}>
+          <DataGrid rows={rs.topRephrasers} columns={columns} getKey={(r) => r.label} />
         </Panel>
       </div>
     </>

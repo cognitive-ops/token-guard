@@ -2,11 +2,12 @@
 #
 # This is NOT part of the production stack and is never deployed to the shared
 # grafana.claude-analytics server. It runs a throwaway Grafana on your machine that
-# reads prompt text from Loki over an SSM port-forward (localhost:3100). Prompt
-# content stays on your laptop for the life of the container.
+# reads prompt text from the LOCAL Loki started by the repo-root docker-compose
+# (`docker compose up -d loki`, port 3100). No AWS/SSM needed. Prompt content
+# stays on your laptop for the life of the container.
 #
-# Turn on  : ./start.sh   (opens the SSM tunnel + starts this Grafana)
-# Turn off : ./stop.sh    (stops Grafana + closes the tunnel)
+# Turn on  : ./start.sh   (checks local Loki is up + starts this Grafana)
+# Turn off : ./stop.sh    (stops Grafana)
 services:
   grafana-prompt-explorer:
     image: grafana/grafana:13.0.2
@@ -23,10 +24,11 @@ services:
       - GF_NEWS_NEWS_FEED_ENABLED=false
       - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/prompt-explorer-dashboard.json
       # Datasource URLs the "Data source" dropdown flips between.
-      # online = production Loki via the SSM port-forward on the host.
-      - ONLINE_LOKI_URL=${ONLINE_LOKI_URL:-http://host.docker.internal:3100}
-      # local = a Loki on your machine; default assumes one published on host port 3110.
-      - LOCAL_LOKI_URL=${LOCAL_LOKI_URL:-http://host.docker.internal:3110}
+      # local = the repo-root docker-compose `loki` service (host port 3100). Default.
+      - LOCAL_LOKI_URL=${LOCAL_LOKI_URL:-http://host.docker.internal:3100}
+      # online = production Loki via an SSM port-forward on the host, if you ever
+      # set one up again; unused/unreachable by default (no AWS required).
+      - ONLINE_LOKI_URL=${ONLINE_LOKI_URL:-http://host.docker.internal:3199}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

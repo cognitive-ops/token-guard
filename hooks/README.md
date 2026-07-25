@@ -7,6 +7,7 @@ happens and stamping git activity with the `session_id`.
 ```mermaid
 flowchart LR
     UPS["UserPromptSubmit<br/>log-prompt.sh"] --> LOKI[("Loki<br/>service_name=claude-code-hooks")]
+    LINT["UserPromptSubmit<br/>lint-prompt.sh → clarity/specificity/context-efficiency scores"] --> LOKI
     PTC["PostToolUse · Bash(git commit *)<br/>log-commit.sh → SHA + session_id"] --> LOKI
     PTP["PostToolUse · Bash(gh pr create *)<br/>log-pr.sh → session_id"] --> LOKI
     PTE["PostToolUse · Edit/Write<br/>log-edit.sh → file + session_id"] --> LOKI
@@ -24,15 +25,19 @@ in the stack — so hooks `POST` to Loki and Grafana derives the ratios with Log
 
 | Script | Hook event | Logged (Loki `event=`) | Fields |
 |--------|-----------|------------------------|--------|
-| `log-prompt.sh` | `UserPromptSubmit` | `prompt` | session_id, cwd, prompt_length *(no text)* |
+| `log-prompt.sh` | `UserPromptSubmit` | `prompt` | session_id, cwd, prompt, prompt_length |
+| `lint-prompt.sh` | `UserPromptSubmit` | `prompt_lint` | session_id, user_email *(local `git config`, best-effort)*, char_count, word_count, clarity, specificity, context_efficiency, overall *(no text)* |
 | `log-commit.sh` | `PostToolUse` Bash `git commit` | `commit` | session_id, commit_sha, repo, cwd |
 | `log-pr.sh` | `PostToolUse` Bash `gh pr create` | `pr` | session_id, pr_url, cwd |
 | `log-edit.sh` | `PostToolUse` Edit/Write/MultiEdit | `edit` | session_id, file, tool |
 | `session-end.sh` | `SessionEnd` | `session_end` | session_id, reason |
 | `git/post-commit` | native git hook (every commit) | `git_commit` | commit_sha, author, branch, repo, session_id, **ai_assisted**, lines_added/deleted, files |
 
-Prompt **text is not stored** (only length) — prompt content already flows separately
-via `OTEL_LOG_USER_PROMPTS`; here we only need counts linked to a session.
+**Discrepancy:** `log-prompt.sh` currently pushes the **full prompt text** to Loki
+(`prompt` field) — despite this doc previously stating text isn't stored. That's a
+pre-existing tradeoff, not changed here. `lint-prompt.sh` is deliberately different:
+it computes scores locally and pushes only counts/scores, **never prompt text**, so it
+doesn't compound that exposure.
 
 ## Install
 
@@ -74,6 +79,7 @@ sum(count_over_time({service_name="claude-code-hooks", event="prompt"} [$__range
 ```bash
 export CLAUDE_HOOK_DRY_RUN=1
 echo '{"session_id":"s1","cwd":"/repo","tool_input":{"command":"git commit -m wip"}}' | hooks/log-commit.sh
+echo '{"session_id":"s1","cwd":"/repo","prompt":"maybe fix the thing idk?"}' | hooks/lint-prompt.sh
 ```
 
 ## Native git hook (all commits + AI-vs-human attribution)

@@ -351,6 +351,42 @@ export const METRIC_DOCS = {
     calc: "Average of prompt_length across user_prompt events.",
   },
 
+  // ---- Prompt refactoring linter ----
+  refactorScore: {
+    title: "Prompt lint score",
+    what: "A rule-based 0-100 score of how clear, specific, and context-efficient a prompt is — not an LLM judgment, a deterministic heuristic.",
+    source: "hooks/lint-prompt.sh (UserPromptSubmit) → Loki → prompt-refactor-exporter → Prometheus.",
+    calc: "Clarity penalizes hedge words/run-ons; specificity rewards file paths, quoted identifiers, and explicit constraints; context efficiency rewards a high unique-word ratio and penalizes oversized pasted blocks relative to instruction text. Overall is the average of the three.",
+    query: "avg by (axis)(claude_prompt_refactor_score)",
+  },
+  refactorPairs: {
+    title: "Rephrase pairs",
+    what: "Same-session prompts where a follow-up scored meaningfully better than the one before it — a detected rephrase.",
+    source: "prompt-refactor-exporter.",
+    calc: "Consecutive prompt_lint events in the same session, ≤5 min apart, with an overall-score improvement of ≥10 points.",
+    query: "sum(claude_prompt_refactor_pairs_total)",
+  },
+  refactorSavedUsd: {
+    title: "Est. $ saved",
+    what: "An ESTIMATE of $ saved by rephrasing to a shorter/clearer prompt — not a measured cost, this stack has no real per-prompt cost data.",
+    source: "prompt-refactor-exporter (token delta) × the org's real blended $/Mtok (Anthropic Admin API, same figure as the API Cost dashboard).",
+    calc: "(before char_count − after char_count) ÷ 4 chars-per-token, summed across rephrase pairs, converted to $ via blendedPerMtok.",
+  },
+  refactorSavedSeconds: {
+    title: "Est. latency saved",
+    what: "An ESTIMATE of response time saved by rephrasing — not measured. This stack emits no latency/duration metric at all; this is a rough token-throughput approximation.",
+    source: "prompt-refactor-exporter.",
+    calc: "Estimated tokens saved ÷ TOKENS_PER_SECOND (default 60, a configurable rough constant, not a measurement).",
+    query: "sum(claude_prompt_refactor_saved_seconds)",
+  },
+  refactorTopRephrasers: {
+    title: "Top rephrasers",
+    what: "Developers with the most detected rephrase pairs.",
+    source: "prompt-refactor-exporter.",
+    calc: "topk(10, claude_prompt_refactor_pairs_total). user_email here is a local `git config user.email` value read by the hook — best-effort, may not match the org-verified identity used elsewhere (Keycloak/Admin API).",
+    query: "topk(10, claude_prompt_refactor_pairs_total)",
+  },
+
   // ---- Leaderboard / per-developer ----
   leaderboard: {
     title: "Developer leaderboard",

@@ -9,6 +9,7 @@ import {
   WorkflowStyleSection,
   PerDeveloperSection,
   PromptVolumeSection,
+  RefactorSection,
 } from "./sections";
 import { PanelSkeleton, GridSkeleton } from "./skeletons";
 
@@ -50,6 +51,10 @@ export default async function UsagePatternsPage({
 
       <Suspense fallback={<div className="mt-8"><PanelSkeleton height="h-80" /></div>}>
         <PromptVolumeSection token={token} />
+      </Suspense>
+
+      <Suspense fallback={<div className="mt-8"><GridSkeleton count={4} /></div>}>
+        <RefactorSection token={token} />
       </Suspense>
     </AppShell>
   );

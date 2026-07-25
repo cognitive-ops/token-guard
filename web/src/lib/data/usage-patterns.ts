@@ -8,6 +8,7 @@ import {
   rangeFromToken,
   promByLabel,
   promByLabelInstant,
+  promScalarInstant,
   lokiByLabel,
   lokiSeries,
   snapshotScalar,
@@ -18,6 +19,7 @@ import {
   type TimeSeriesPoint,
   type TimeRange,
 } from "./common";
+import { getApiCost, currentMonth } from "./api-cost";
 
 /** Per-section loaders for the Usage Patterns dashboard, cached by range token. */
 
@@ -311,4 +313,46 @@ export const getPromptVolume = (token: string) =>
       r,
     );
     return { promptsOverTime: prompts };
+  });
+
+// --- Prompt refactoring linter ---
+//
+// hooks/lint-prompt.sh scores every prompt (clarity/specificity/context
+// efficiency, rule-based, no LLM call) and prompt-refactor-exporter pairs
+// consecutive same-session prompts that improved into "rephrase" events,
+// materializing gauges the same way prompt-tool-exporter does (fixed lookback,
+// no live-Loki fallback — there's no equivalent LogQL for the pairing logic).
+// $ is deliberately computed HERE, not in the exporter: only this app has live
+// access to the org's real blended $/Mtok (Admin API), reused from api-cost.ts
+// rather than duplicated as a static rate.
+
+export interface RefactorStats {
+  scoresByAxis: LabelledValue[]; // clarity | specificity | context_efficiency | overall
+  pairsTotal: number;
+  tokensSavedTotal: number;
+  savedUsdEstimate: number; // estimated — tokensSavedTotal / 1e6 * blendedPerMtok
+  savedSecondsEstimate: number; // estimated — not measured, this stack emits no latency metric
+  topRephrasers: LabelledValue[]; // user_email (best-effort, local git identity) -> pairs
+}
+
+export const getRefactorStats = (token: string) =>
+  cached("up-refactor", token, async (): Promise<RefactorStats> => {
+    const r = rangeFromToken(token);
+    const [scoresByAxis, pairsTotal, tokensSavedTotal, savedSecondsEstimate, apiCost, topRephrasers] =
+      await Promise.all([
+        promByLabelInstant("refactorScores", `avg by (axis)(claude_prompt_refactor_score)`, "axis", r),
+        promScalarInstant("refactorPairs", `sum(claude_prompt_refactor_pairs_total)`, r),
+        promScalarInstant("refactorTokensSaved", `sum(claude_prompt_refactor_tokens_saved)`, r),
+        promScalarInstant("refactorSecondsSaved", `sum(claude_prompt_refactor_saved_seconds)`, r),
+        getApiCost(currentMonth()),
+        promByLabelInstant("refactorTopRephrasers", `topk(10, claude_prompt_refactor_pairs_total)`, "user_email", r),
+      ]);
+    return {
+      scoresByAxis,
+      pairsTotal,
+      tokensSavedTotal,
+      savedUsdEstimate: (tokensSavedTotal / 1_000_000) * apiCost.blendedPerMtok,
+      savedSecondsEstimate,
+      topRephrasers,
+    };
   });

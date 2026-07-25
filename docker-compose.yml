@@ -114,6 +114,24 @@ services:
     restart: unless-stopped
     mem_limit: 128m
 
+  # Prompt-refactor exporter (pairs consecutive same-session hooks/lint-prompt.sh
+  # scores into "rephrase" events; estimates tokens/latency saved — NOT real cost
+  # or latency, this stack has no per-prompt measurement for either)
+  prompt-refactor-exporter:
+    build: ./prompt-refactor-exporter
+    container_name: prompt-refactor-exporter
+    environment:
+      - LOKI_URL=http://loki:3100
+      - LOOKBACK_DAYS=29
+      - POLL_INTERVAL_SECONDS=3600
+      - REPHRASE_WINDOW_SECONDS=300   # max gap between consecutive prompts to count as a rephrase
+      - MIN_IMPROVEMENT=10            # min overall-score delta (0-100) to count as "meaningfully better"
+      - TOKENS_PER_SECOND=60          # rough streaming-throughput estimate; NOT measured
+    depends_on:
+      - loki
+    restart: unless-stopped
+    mem_limit: 128m
+
   # Loki (log/event storage)
   loki:
     image: grafana/loki:3.7.1

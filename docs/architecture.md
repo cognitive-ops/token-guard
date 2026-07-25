@@ -317,6 +317,7 @@ Services:
 | `grafana` | 3000 | Dashboards |
 | `billing-exporter` | 9105 | Real cost from the Admin API (needs `.secrets/admin-key` + `seat-roster.yaml`) |
 | `prompt-lang-exporter` | 9106 | Prompt-language detection from Loki |
+| `prompt-refactor-exporter` | 9109 | Rephrase-pair detection + tokens/latency-saved estimate from `hooks/lint-prompt.sh` events |
 
 Persistent volumes: `prometheus_data`, `grafana_data`, `loki_data`
 
@@ -346,7 +347,8 @@ Persistent volumes: `prometheus_data`, `grafana_data`, `loki_data`
 | `grafana/dashboards/developer-drilldown-dashboard.json` | **Developer** — per-user cost/usage + timeline/activity heatmaps + prompt patterns (`$user`) |
 | `billing-exporter/` | Real-cost exporter (Admin API → Prometheus) |
 | `prompt-lang-exporter/` | Prompt-language exporter (Loki → Prometheus) |
-| `hooks/` | Claude Code hooks → Loki (prompts/commit, prompts/PR, commit↔session) |
+| `prompt-refactor-exporter/` | Rephrase-pair detection + tokens/latency-saved estimate (Loki → Prometheus) |
+| `hooks/` | Claude Code hooks → Loki (prompts/commit, prompts/PR, commit↔session, prompt-lint scores) |
 | `grafana/dashboards/hooks-dashboard.json` | Hooks metrics dashboard |
 | `docs/claude-code-roi-full.md` | Complete implementation guide with examples and PromQL queries |
 | `docs/report-generation-prompt.md` | Claude prompt template for automated ROI reports |

@@ -380,6 +380,12 @@ scrape_configs:
     static_configs:
       - targets: ['prompt-tool-exporter:9108']
 
+  # Scrape the prompt-refactor exporter (rephrase-pair detection + tokens/latency-saved estimate)
+  - job_name: 'prompt-refactor-exporter'
+    scrape_interval: 5m
+    static_configs:
+      - targets: ['prompt-refactor-exporter:9109']
+
   # Add additional scraping targets here if needed
   # - job_name: 'your-app'
   #   static_configs:

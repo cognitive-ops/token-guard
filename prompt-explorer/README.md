@@ -1,27 +1,34 @@
 # Prompt Explorer (local-only, opt-in)
 
-A throwaway, **local** Grafana for inspecting actual Claude Code **user prompts**. It is
+A throwaway, **local** Grafana for inspecting Claude Code **user prompts**. It is
 deliberately *not* part of the production stack and is **never** provisioned onto the
 shared `grafana.claude-analytics.scopicdev.com` server — prompt text stays on your
 machine, only while you have it turned on.
 
-It reads `user_prompt` events from the production Loki over an **SSM port-forward**, so
-no data is copied or persisted locally beyond the running container.
+By default it reads from a **local Loki** — the repo-root docker-compose `loki`
+service — no AWS access needed. (An "online · prod via SSM" datasource option still
+exists in the dropdown if you set up your own SSM port-forward later, but it's not
+required.)
 
 ## Prerequisites
-- AWS access to the analytics instance via the `scopic-ml-development` profile
-- `session-manager-plugin` installed
 - Docker + Docker Compose
+- The repo-root `loki` service running, with some data in it:
+  ```bash
+  cd ..                                  # token-guard root
+  docker compose up -d loki
+  python tools/seed-demo-data.py loki    # or your own hooks/log-prompt.sh events
+  ```
 
 ## Turn on / off
 ```bash
-./start.sh    # opens the SSM tunnel to Loki + starts local Grafana
+./start.sh    # checks local Loki is reachable + starts local Grafana
 # open http://localhost:3001   (anonymous admin; nothing exposed beyond localhost)
-./stop.sh     # stops Grafana + closes the tunnel
+./stop.sh     # stops Grafana
 ```
 
-Override defaults via env if needed:
-`AWS_PROFILE`, `SSM_INSTANCE`, `LOKI_LOCAL_PORT`.
+Override defaults via env if needed: `LOKI_LOCAL_PORT` (start.sh's reachability
+check), `LOCAL_LOKI_URL` (the URL Grafana's container itself uses — same port, but
+via `host.docker.internal`).
 
 ## What you get
 - **Prompts (newest first)** — each prompt rendered as a readable line; expand a row for
@@ -38,5 +45,7 @@ that don't expose content (prompt language, length, volume) belong on the shared
 instead — see the `prompt-lang-exporter`.
 
 ## Notes
-- The Loki datasource points at `http://host.docker.internal:3100` (the tunnel on the host).
-- Loki retention is 720h (30 days), so that's the maximum lookback.
+- The local Loki datasource points at `http://host.docker.internal:3100` (the root
+  compose's `loki` service, reached from this container via the Docker host gateway).
+- Loki retention is set by the root `loki-config.yaml` (currently 10y for the local
+  stack; prod may differ) — that's the maximum lookback.
