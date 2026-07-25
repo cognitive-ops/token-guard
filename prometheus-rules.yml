@@ -9,13 +9,13 @@ groups:
     interval: 1m
     rules:
       # Score every (user_id, user_email) pair observed in the last 90d.
-      # Corporate (@scopicsoftware.com) addresses score 2, any other address
+      # Corporate (@example.com) addresses score 2, any other address
       # scores 1. The `or` keeps non-corporate pairs that the first term drops.
       - record: claude_user_email_score
         expr: |
           (
             count by (user_id, user_email) (
-              last_over_time(claude_code_cost_usage_USD_total{user_email=~".+@scopicsoftware\\.com"}[90d])
+              last_over_time(claude_code_cost_usage_USD_total{user_email=~".+@example\\.com"}[90d])
             ) * 0 + 2
           )
           or

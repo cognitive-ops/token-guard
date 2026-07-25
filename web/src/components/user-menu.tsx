@@ -23,7 +23,7 @@ export async function UserMenu() {
       <form action={doSignOut}>
         <button
           type="submit"
-          className="rounded-md border border-[var(--color-panel-border)] px-3 py-1 text-sm text-[var(--color-muted)] transition-colors hover:border-[var(--color-scopic)] hover:text-[var(--color-text)]"
+          className="rounded-md border border-[var(--color-panel-border)] px-3 py-1 text-sm text-[var(--color-muted)] transition-colors hover:border-[var(--color-brand)] hover:text-[var(--color-text)]"
         >
           Sign out
         </button>

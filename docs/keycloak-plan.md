@@ -11,7 +11,7 @@ and everyone else is **denied**. Keep the local `admin` account as break-glass.
 ## Why only Grafana
 
 Grafana is the only authenticated, public-facing service in the stack
-(`grafana.claude-analytics.scopicdev.com`). Prometheus, Loki, and the exporters are
+(`grafana.claude-analytics.example.com`). Prometheus, Loki, and the exporters are
 internal-network-only behind the ALB and are not directly exposed. So auth work is
 scoped to the `grafana` service alone.
 
@@ -74,12 +74,12 @@ GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=true
 ```
 
 `KEYCLOAK_*` live in `.env` (gitignored) — never committed. `GF_SERVER_ROOT_URL` must be
-`https://grafana.claude-analytics.scopicdev.com` (the redirect URI derives from it).
+`https://grafana.claude-analytics.example.com` (the redirect URI derives from it).
 
 ### Keycloak client setup
 
 1. Confidential client `claude-code-analytics` (standard / authorization-code flow).
-2. **Valid redirect URI:** `https://grafana.claude-analytics.scopicdev.com/login/generic_oauth`
+2. **Valid redirect URI:** `https://grafana.claude-analytics.example.com/login/generic_oauth`
 3. Create two **client roles** on the client: `grafana-admin`, `grafana-viewer`.
 4. Add the roles mapper (below) so the roles reach Grafana as a flat `roles` claim.
 
@@ -119,7 +119,7 @@ incognito window) so a fresh token is minted.
 
 ## Decisions (resolved)
 
-1. **Keycloak instance** — used an **existing** Scopic Keycloak (realm/URL in `.env`); no
+1. **Keycloak instance** — used an **existing** Your Company Keycloak (realm/URL in `.env`); no
    new Keycloak service stood up.
 2. **Tiers** — **two-tier** (Admin / Viewer).
 3. **Break-glass** — local `admin` login **kept enabled** (`GF_AUTH_DISABLE_LOGIN_FORM`

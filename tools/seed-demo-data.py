@@ -21,16 +21,16 @@ TOKEN = os.environ.get("OTEL_TOKEN", "localtest")
 LOKI = os.environ.get("LOKI_URL", "http://localhost:3100")
 
 USERS = [
-    ("viet-anh.n@scopicsoftware.com", "vscode"),
-    ("alex.t@scopicsoftware.com", "iTerm.app"),
-    ("maria.g@scopicsoftware.com", "vscode"),
-    ("ci-bot@scopicsoftware.com", "non-interactive"),
+    ("dev1@example.com", "vscode"),
+    ("dev2@example.com", "iTerm.app"),
+    ("dev3@example.com", "vscode"),
+    ("ci-bot@example.com", "non-interactive"),
 ]
 MODELS = ["claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5-20251001"]
 PROJECTS = ["roi-analytics", "mobile-app", "data-pipeline"]
 REPOS = [
-    ("scopic-software/claude-code-roi-analytics", "gitea"),
-    ("scopic-software/mobile-app", "github.com"),
+    ("your-org/claude-code-roi-analytics", "gitea"),
+    ("your-org/mobile-app", "github.com"),
 ]
 PROMPTS = {  # language -> sample prompts
     "en": [

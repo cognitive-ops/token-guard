@@ -11,9 +11,9 @@ seat_fees:
 
 # One entry per member. seat_type: premium | standard
 members:
-  - email: viet-anh.n@scopicsoftware.com
+  - email: dev1@example.com
     seat_type: premium
-  # - email: someone.else@scopicsoftware.com
+  # - email: someone.else@example.com
   #   seat_type: standard
 
 # OPTIONAL override map. Overage shows up in the Usage Report API keyed by account_id
@@ -22,7 +22,7 @@ members:
 # you normally leave this empty. Add entries here only to OVERRIDE the auto-map for an
 # edge case — the roster wins over the auto-map.
 account_map: {}
-  # user_01AbC...: viet-anh.n@scopicsoftware.com
+  # user_01AbC...: dev1@example.com
 
 # Manual extra-usage fallback ($, for the lookback window). Seat overage may NOT
 # appear in the Anthropic APIs (subscription billing is an API blind spot —
@@ -30,7 +30,7 @@ account_map: {}
 # overage from claude.ai -> Admin -> Billing and record it here. Used only when the
 # API reports NO overage for that member (so the two never double-count).
 manual_extra_usage: {}
-  # viet-anh.n@scopicsoftware.com: 12.50
+  # dev1@example.com: 12.50
 
 # Claude Code SERVICE/automation workspaces. The Cost Report API returns the org's
 # ENTIRE Anthropic bill across ALL workspaces (your products included), so list ONLY

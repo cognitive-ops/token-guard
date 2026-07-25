@@ -1,5 +1,5 @@
 {
-  "uid": "scopic-usage-patterns",
+  "uid": "usage-patterns",
   "title": "Token Guard AI Usage Analytics \u2014 Usage Patterns",
   "tags": [
     "claude-code",
@@ -22,7 +22,7 @@
     {
       "title": "\u2190 Home",
       "type": "link",
-      "url": "/d/scopic-home",
+      "url": "/d/home",
       "icon": "external link",
       "targetBlank": false
     }

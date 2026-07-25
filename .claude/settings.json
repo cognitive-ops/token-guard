@@ -1,6 +1,6 @@
 {
   "env": {
-    "OTEL_RESOURCE_ATTRIBUTES": "repository.fullname=scopic-software/claude-code-roi-analytics,repository.host=gitea",
+    "OTEL_RESOURCE_ATTRIBUTES": "repository.fullname=your-org/claude-code-roi-analytics,repository.host=gitea",
     "CLAUDE_HOOK_LOKI_URL": "http://localhost:3100"
   },
   "hooks": {

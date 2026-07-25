@@ -47,7 +47,7 @@ with sync_playwright() as p:
         'a[href="/"] img',
         "[class*=brand] img",
         'img[src*="grafana_icon"]',
-        'img[src*="scopic"]',
+        'img[src*="brand"]',
         "header img",
         "nav img",
     ]:

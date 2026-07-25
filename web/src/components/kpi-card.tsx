@@ -7,7 +7,7 @@ export function KpiCard({
   value,
   hint,
   info,
-  accent = "var(--color-scopic)",
+  accent = "var(--color-brand)",
   raw,
   hideWhenZero,
   compactValue,

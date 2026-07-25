@@ -55,7 +55,7 @@ export function UserSelect({ users, active }: { users: string[]; active: string 
         aria-label="Developer"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`flex max-w-[260px] items-center gap-2 rounded-md border border-[var(--color-panel-border)] bg-[var(--color-panel)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-scopic)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-scopic)]`}
+        className={`flex max-w-[260px] items-center gap-2 rounded-md border border-[var(--color-panel-border)] bg-[var(--color-panel)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-brand)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]`}
       >
         <UserIcon />
         <span className="truncate font-mono text-xs">{active || "Select developer"}</span>
@@ -69,7 +69,7 @@ export function UserSelect({ users, active }: { users: string[]; active: string 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search developers…"
-              className="w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-sm outline-none focus:border-[var(--color-scopic)]"
+              className="w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-bg)] px-2.5 py-1.5 text-sm outline-none focus:border-[var(--color-brand)]"
             />
           </div>
           <ul className="max-h-72 overflow-auto p-1">
@@ -82,7 +82,7 @@ export function UserSelect({ users, active }: { users: string[]; active: string 
                   type="button"
                   onClick={() => select(u)}
                   className={`w-full truncate rounded-md px-2.5 py-1.5 text-left font-mono text-xs transition-colors hover:bg-[var(--color-panel-2)] ${
-                    u === active ? "text-[var(--color-scopic)]" : "text-[var(--color-text)]"
+                    u === active ? "text-[var(--color-brand)]" : "text-[var(--color-text)]"
                   }`}
                 >
                   {u}

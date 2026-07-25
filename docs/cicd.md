@@ -11,7 +11,7 @@ flowchart LR
     CC -->|triggers| CB["CodeBuild<br/>(buildspec.yaml)"]
     CB -->|build + push ARM64 images| ECR["Amazon ECR"]
     CB -->|assume SSM deploy role| SSM["SSM RunCommand"]
-    SSM -->|run as ec2-user| EC2["EC2 i-0fe9d2092e0ab25cd<br/>docker compose stack"]
+    SSM -->|run as ec2-user| EC2["EC2 <EC2_INSTANCE_ID><br/>docker compose stack"]
     ECR -->|docker compose pull| EC2
 ```
 
@@ -34,7 +34,7 @@ flowchart LR
 ## What it deploys
 
 **App images** — all four share the **single** ECR repo `IMAGE_REPO_NAME`
-(`scopic-software/claude-code-roi-analytics`); the service is encoded in the **tag**, not a
+(`your-org/claude-code-roi-analytics`); the service is encoded in the **tag**, not a
 sub-repo (ECR doesn't auto-create sub-repos). Each push gets `<service>-<build#>` and
 `<service>-latest`:
 
@@ -90,9 +90,9 @@ You must set these on the CodeBuild project:
 
 | Variable | Example |
 |----------|---------|
-| `AWS_ACCOUNT_ID` | `320963574916` |
-| `IMAGE_REPO_NAME` | `scopic-software/claude-code-roi-analytics` |
-| `SSM_DEPLOY_ROLE_ARN` | `arn:aws:iam::320963574916:role/dev-claude-code-roi-analytics-role-ssm-deploy` |
+| `AWS_ACCOUNT_ID` | `<AWS_ACCOUNT_ID>` |
+| `IMAGE_REPO_NAME` | `your-org/claude-code-roi-analytics` |
+| `SSM_DEPLOY_ROLE_ARN` | `arn:aws:iam::<AWS_ACCOUNT_ID>:role/dev-claude-code-roi-analytics-role-ssm-deploy` |
 | `DEPLOY_COMPOSE_DIR` | `/home/ec2-user/claude-analytics` |
 
 `AWS_DEFAULT_REGION` and `CODEBUILD_BUILD_NUMBER` are provided by CodeBuild automatically;

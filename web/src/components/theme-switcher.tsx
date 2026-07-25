@@ -24,7 +24,7 @@ export function ThemeSwitcher() {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
         aria-label="Theme"
-        className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--color-panel-border)] text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-scopic)]"
+        className="flex h-8 w-8 items-center justify-center rounded-md border border-[var(--color-panel-border)] text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
       >
         <Active />
       </DropdownMenu.Trigger>
@@ -42,7 +42,7 @@ export function ThemeSwitcher() {
                 onSelect={() => setTheme(o.value)}
                 className={`flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-none data-[highlighted]:bg-[var(--color-panel-2)] ${
                   current === o.value
-                    ? "text-[var(--color-scopic)]"
+                    ? "text-[var(--color-brand)]"
                     : "text-[var(--color-text)]"
                 }`}
               >

@@ -33,7 +33,7 @@ export default async function OverviewPage({
         A bird&apos;s-eye view of Claude Code adoption across the org. Cost figures use the{" "}
         <strong className="text-[var(--color-text)]">OTEL estimate</strong> (tokens × list price) — an
         estimate, not the actual bill; see Real Cost for the authoritative figure. Tap any{" "}
-        <span className="font-semibold text-[var(--color-scopic)]">ⓘ</span> for details.
+        <span className="font-semibold text-[var(--color-brand)]">ⓘ</span> for details.
       </PageHeader>
 
       <SectionHeading title="Adoption & cost" />

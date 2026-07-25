@@ -30,7 +30,7 @@ export default async function UsagePatternsPage({
       <PageHeader title="Usage Patterns" tagline="how developers actually use Claude Code">
         Engagement, prompt craft, and workflow style across the team — what it&apos;s used for,
         how work gets delegated, and who&apos;s most active. Tap any{" "}
-        <span className="font-semibold text-[var(--color-scopic)]">ⓘ</span> for details.
+        <span className="font-semibold text-[var(--color-brand)]">ⓘ</span> for details.
       </PageHeader>
 
       <Suspense fallback={<PanelSkeleton height="h-96" />}>

@@ -21,7 +21,7 @@ export default function Error({
       </pre>
       <button
         onClick={reset}
-        className="mt-4 rounded bg-[var(--color-scopic)] px-4 py-2 text-sm font-semibold text-white"
+        className="mt-4 rounded bg-[var(--color-brand)] px-4 py-2 text-sm font-semibold text-white"
       >
         Retry
       </button>

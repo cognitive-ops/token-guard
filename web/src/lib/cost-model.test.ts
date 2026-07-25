@@ -3,17 +3,17 @@ import { joinDeveloperCosts, summariseDeveloperCosts } from "./cost-model";
 
 describe("joinDeveloperCosts", () => {
   const realCost = [
-    { label: "a@scopic.com", value: 125 },
-    { label: "b@scopic.com", value: 150 },
-    { label: "c@scopic.com", value: 25 },
+    { label: "a@example.com", value: 125 },
+    { label: "b@example.com", value: 150 },
+    { label: "c@example.com", value: 25 },
   ];
-  const extraUsage = [{ label: "b@scopic.com", value: 50 }];
+  const extraUsage = [{ label: "b@example.com", value: 50 }];
 
   it("joins on email and derives seat fee = real - extra", () => {
     const rows = joinDeveloperCosts(realCost, extraUsage);
-    const b = rows.find((r) => r.email === "b@scopic.com")!;
+    const b = rows.find((r) => r.email === "b@example.com")!;
     expect(b).toEqual({
-      email: "b@scopic.com",
+      email: "b@example.com",
       realCost: 150,
       extraUsage: 50,
       seatFee: 100,
@@ -22,7 +22,7 @@ describe("joinDeveloperCosts", () => {
 
   it("defaults extra usage to 0 when a developer has none", () => {
     const a = joinDeveloperCosts(realCost, extraUsage).find(
-      (r) => r.email === "a@scopic.com",
+      (r) => r.email === "a@example.com",
     )!;
     expect(a.extraUsage).toBe(0);
     expect(a.seatFee).toBe(125);
@@ -30,8 +30,8 @@ describe("joinDeveloperCosts", () => {
 
   it("never reports a negative seat fee", () => {
     const rows = joinDeveloperCosts(
-      [{ label: "x@scopic.com", value: 10 }],
-      [{ label: "x@scopic.com", value: 40 }],
+      [{ label: "x@example.com", value: 10 }],
+      [{ label: "x@example.com", value: 40 }],
     );
     expect(rows[0]!.seatFee).toBe(0);
   });
@@ -39,9 +39,9 @@ describe("joinDeveloperCosts", () => {
   it("sorts by real cost descending", () => {
     const rows = joinDeveloperCosts(realCost, extraUsage);
     expect(rows.map((r) => r.email)).toEqual([
-      "b@scopic.com",
-      "a@scopic.com",
-      "c@scopic.com",
+      "b@example.com",
+      "a@example.com",
+      "c@example.com",
     ]);
   });
 });
@@ -50,10 +50,10 @@ describe("summariseDeveloperCosts", () => {
   it("totals real cost, seat fees, overage, and counts developers with overage", () => {
     const rows = joinDeveloperCosts(
       [
-        { label: "a@scopic.com", value: 125 },
-        { label: "b@scopic.com", value: 150 },
+        { label: "a@example.com", value: 125 },
+        { label: "b@example.com", value: 150 },
       ],
-      [{ label: "b@scopic.com", value: 50 }],
+      [{ label: "b@example.com", value: 50 }],
     );
     expect(summariseDeveloperCosts(rows)).toEqual({
       totalReal: 275,

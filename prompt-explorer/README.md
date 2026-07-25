@@ -2,7 +2,7 @@
 
 A throwaway, **local** Grafana for inspecting Claude Code **user prompts**. It is
 deliberately *not* part of the production stack and is **never** provisioned onto the
-shared `grafana.claude-analytics.scopicdev.com` server — prompt text stays on your
+shared `grafana.claude-analytics.example.com` server — prompt text stays on your
 machine, only while you have it turned on.
 
 By default it reads from a **local Loki** — the repo-root docker-compose `loki`

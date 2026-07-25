@@ -15,9 +15,9 @@
   --color-panel-border: #dde4ee;
   --color-text: #0e1a2b;
   --color-muted: #5a6775;
-  --color-scopic: #0a6cff;
-  --color-scopic-light: #2f86ff;
-  --color-scopic-dark: #0a4d8c;
+  --color-brand: #0a6cff;
+  --color-brand-light: #2f86ff;
+  --color-brand-dark: #0a4d8c;
   --color-violet: #6d4bff;
   --color-teal: #0f9b8e;
   --color-good: #1a9d63;
@@ -33,9 +33,9 @@
   --color-panel-border: #232c3f;
   --color-text: #e6edf3;
   --color-muted: #8a93a2;
-  --color-scopic: #2f86ff;
-  --color-scopic-light: #5aa0ff;
-  --color-scopic-dark: #0a4d8c;
+  --color-brand: #2f86ff;
+  --color-brand-light: #5aa0ff;
+  --color-brand-dark: #0a4d8c;
   --color-violet: #8b73ff;
   --color-teal: #2aa198;
   --color-good: #34d399;
@@ -61,7 +61,7 @@ body {
 /* Brand glow behind page headers — subtle in both themes. */
 .brand-aura {
   background:
-    radial-gradient(900px 240px at 0% -10%, color-mix(in srgb, var(--color-scopic) 14%, transparent), transparent 60%),
+    radial-gradient(900px 240px at 0% -10%, color-mix(in srgb, var(--color-brand) 14%, transparent), transparent 60%),
     radial-gradient(700px 200px at 100% -20%, color-mix(in srgb, var(--color-violet) 10%, transparent), transparent 60%);
 }
 
@@ -76,11 +76,11 @@ body {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .panel-hover:hover {
-  border-color: color-mix(in srgb, var(--color-scopic) 45%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand) 45%, transparent);
 }
 
 .accent-rule {
-  background: linear-gradient(90deg, var(--color-scopic), var(--color-violet) 70%, transparent);
+  background: linear-gradient(90deg, var(--color-brand), var(--color-violet) 70%, transparent);
 }
 
 /* Themed, slim scrollbars for panels, tables, and the page. */
@@ -102,7 +102,7 @@ body {
   background-clip: content-box;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background-color: color-mix(in srgb, var(--color-scopic) 60%, transparent);
+  background-color: color-mix(in srgb, var(--color-brand) 60%, transparent);
   background-clip: content-box;
 }
 *::-webkit-scrollbar-corner {

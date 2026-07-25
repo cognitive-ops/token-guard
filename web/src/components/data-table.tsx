@@ -42,7 +42,7 @@ export function DeveloperCostTable({ rows }: { rows: DeveloperCostRow[] }) {
               >
                 {formatUsd(r.extraUsage)}
               </td>
-              <td className="py-2 text-right font-semibold tabular-nums text-[var(--color-scopic-light)]">
+              <td className="py-2 text-right font-semibold tabular-nums text-[var(--color-brand-light)]">
                 {formatUsd(r.realCost)}
               </td>
             </tr>
@@ -91,7 +91,7 @@ export function UsageTable({
           </div>
           <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-[var(--color-panel-2)]">
             <div
-              className="h-full rounded-full bg-[var(--color-scopic)]"
+              className="h-full rounded-full bg-[var(--color-brand)]"
               style={{ width: `${Math.max(2, (r.value / max) * 100)}%` }}
             />
           </div>

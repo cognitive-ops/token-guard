@@ -158,9 +158,9 @@ Visualization layer. Provisioned automatically on startup via:
 |-----------|-----|----------------|------------|
 | **— Overview** | `claude-code-working` | Exec / org overview | Total cost, active users, tokens, LOC, cost by model/project/repo/IDE, prompt language, **+ a Usage Patterns insights row** (main vs subagent, effort, intent mix, mini leaderboard). Defaults to last 30 days. |
 | **— Real Cost** | `claude-real-cost` | Finance | Org real cost, Service-key Billed (real) vs OTEL Estimate, Real Cost / Extra Usage per developer, Billed Cost by Model |
-| **— Usage Patterns** | `scopic-usage-patterns` | Team enablement / coaching | **Engagement leaderboard**, purpose (intent/behaviors/slash-commands), workflow style (tool mix, main-vs-subagent, effort, model fit, subagent type, session start type), prompt craft & verification, cost discipline, prompt volume & language. Aggregate, coaching-oriented. |
-| **— Developer** | `scopic-dev-drilldown` | One-developer deep dive | Per-user cost/tokens/efficiency, project **timeline & activity heatmaps** (hour×day, weekday folds), and that developer's **prompt patterns**. `$user` dropdown. |
-| **— Home** | `scopic-home` | Launcher | Cards linking to the four dashboards above |
+| **— Usage Patterns** | `usage-patterns` | Team enablement / coaching | **Engagement leaderboard**, purpose (intent/behaviors/slash-commands), workflow style (tool mix, main-vs-subagent, effort, model fit, subagent type, session start type), prompt craft & verification, cost discipline, prompt volume & language. Aggregate, coaching-oriented. |
+| **— Developer** | `dev-drilldown` | One-developer deep dive | Per-user cost/tokens/efficiency, project **timeline & activity heatmaps** (hour×day, weekday folds), and that developer's **prompt patterns**. `$user` dropdown. |
+| **— Home** | `home` | Launcher | Cards linking to the four dashboards above |
 
 > The OTEL cost panels are **estimates** (tokens × list price); the Real Cost dashboard
 > is the authoritative spend. See [`billing-exporter/README.md`](../billing-exporter/README.md).
@@ -172,7 +172,7 @@ fresh/resume/continue), plus prompt **intent** and **behaviors** classified loca
 streams `claude-code-intent` / `-behavior` / `-command`). These drive the Usage Patterns
 and Developer dashboards. Prompt text is classified on the analytics box and never leaves it.
 
-Deployed at: `https://grafana.claude-analytics.scopicdev.com`
+Deployed at: `https://grafana.claude-analytics.example.com`
 
 ---
 
@@ -323,7 +323,7 @@ Persistent volumes: `prometheus_data`, `grafana_data`, `loki_data`
 
 ### Organization-Wide
 1. Deploy the full stack (collector + Prometheus + Loki + Grafana + exporters) on a shared server or ECS/Kubernetes
-2. Configure DNS → `https://grafana.claude-analytics.scopicdev.com`
+2. Configure DNS → `https://grafana.claude-analytics.example.com`
 3. Push environment variables to all developer machines via MDM using `managed-settings.json`
 4. Set `OTEL_EXPORTER_OTLP_ENDPOINT` to point at the shared collector
 5. Provide the Admin API key and seat roster to `billing-exporter`; optionally deploy

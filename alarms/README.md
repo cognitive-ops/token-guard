@@ -1,9 +1,9 @@
 # Claude Code Analytics — Alarms
 
 CloudWatch monitoring for the Claude Code Analytics stack (Prometheus / Grafana /
-Loki / otel) running on EC2 instance `i-0fe9d2092e0ab25cd` behind `scopic-ai-dev-alb`.
+Loki / otel) running on EC2 instance `<EC2_INSTANCE_ID>` behind `internal-dev-alb`.
 
-Account: **scopic-ml-development** (`320963574916`) · Region: **us-east-1**
+Account: **your-aws-profile** (`<AWS_ACCOUNT_ID>`) · Region: **us-east-1**
 
 ## Files
 
@@ -25,7 +25,7 @@ target) need no agent — AWS emits those automatically.
 The instance needs a role that allows publishing metrics. Already set up:
 
 - Role `claude-analytics-cwagent-role` with managed policy `CloudWatchAgentServerPolicy`
-- Instance profile `claude-analytics-cwagent-profile`, associated with `i-0fe9d2092e0ab25cd`
+- Instance profile `claude-analytics-cwagent-profile`, associated with `<EC2_INSTANCE_ID>`
 
 Without this the agent runs but every `PutMetricData` returns `AccessDenied`.
 
@@ -54,7 +54,7 @@ Confirm metrics arrive (~2 min after start):
 
 ```bash
 aws cloudwatch list-metrics --namespace CWAgent --region us-east-1 \
-  --dimensions Name=InstanceId,Value=i-0fe9d2092e0ab25cd
+  --dimensions Name=InstanceId,Value=<EC2_INSTANCE_ID>
 ```
 
 > **Disk dimensions:** `disk_used_percent` is emitted with dimensions
@@ -72,7 +72,7 @@ aws cloudformation create-stack --region us-east-1 \
 ```
 
 Then **confirm the SNS subscription**: the email in the `AlertEmail` parameter
-(`wayan.w@scopicsoftware.com`) receives a confirmation link. Until it's clicked,
+(`ops@example.com`) receives a confirmation link. Until it's clicked,
 the subscription stays `PendingConfirmation` and no alerts are delivered.
 
 Watch it come up:

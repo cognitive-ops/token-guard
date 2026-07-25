@@ -58,7 +58,7 @@ export function TimePicker({
     <DropdownMenu.Root open={open} onOpenChange={setOpen}>
       <DropdownMenu.Trigger
         aria-label="Time range"
-        className="flex items-center gap-2 rounded-md border border-[var(--color-panel-border)] bg-[var(--color-panel)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-scopic)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-scopic)]"
+        className="flex items-center gap-2 rounded-md border border-[var(--color-panel-border)] bg-[var(--color-panel)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-brand)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
       >
         <ClockIcon />
         {activeLabel}
@@ -77,7 +77,7 @@ export function TimePicker({
                 onSelect={() => selectPreset(p.id)}
                 className={`cursor-pointer rounded-md px-2.5 py-1.5 text-sm outline-none data-[highlighted]:bg-[var(--color-panel-2)] ${
                   activeToken === p.id
-                    ? "font-semibold text-[var(--color-scopic)]"
+                    ? "font-semibold text-[var(--color-brand)]"
                     : "text-[var(--color-text)]"
                 }`}
               >
@@ -97,19 +97,19 @@ export function TimePicker({
               type="datetime-local"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
-              className="mb-2 w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-bg)] px-2 py-1 text-xs outline-none focus:border-[var(--color-scopic)]"
+              className="mb-2 w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-bg)] px-2 py-1 text-xs outline-none focus:border-[var(--color-brand)]"
             />
             <label className="mb-1 block text-[11px] text-[var(--color-muted)]">To</label>
             <input
               type="datetime-local"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              className="mb-2 w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-bg)] px-2 py-1 text-xs outline-none focus:border-[var(--color-scopic)]"
+              className="mb-2 w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-bg)] px-2 py-1 text-xs outline-none focus:border-[var(--color-brand)]"
             />
             <button
               onClick={applyCustom}
               disabled={!from || !to}
-              className="w-full rounded-md bg-[var(--color-scopic)] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
+              className="w-full rounded-md bg-[var(--color-brand)] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
             >
               Apply custom range
             </button>

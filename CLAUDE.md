@@ -44,10 +44,10 @@ so validate PromQL with `query_range`, not instant queries at `now`.
 
 ## Production deployment
 
-- **Host:** EC2 `i-0fe9d2092e0ab25cd`, AWS profile `scopic-ml-development`, region
+- **Host:** EC2 `<EC2_INSTANCE_ID>`, AWS profile `your-aws-profile`, region
   `us-east-1`, public IP 54.227.49.106. Amazon Linux 2023, **ARM64**, 2 vCPU / ~7.6 GB.
 - **Access (read-only ops):** via SSM, no SSH/bastion needed. Interactive:
-  `aws ssm start-session --target i-0fe9d2092e0ab25cd --profile scopic-ml-development`.
+  `aws ssm start-session --target <EC2_INSTANCE_ID> --profile your-aws-profile`.
   Scripted: `aws ssm send-command --document-name AWS-RunShellScript ...` then
   `get-command-invocation`. Containers reach each other by service name; from the host,
   resolve a container IP with `docker inspect -f '{{...}}' <name>`.
@@ -58,10 +58,10 @@ so validate PromQL with `query_range`, not instant queries at `now`.
 - **Services & ports:** `grafana` (0.0.0.0:3000), `claude-roi-web` (0.0.0.0:3001),
   `otel-collector` (4317/4318 OTLP ingest, 13133 health), `prometheus`/`loki`/exporters
   internal-only. **No on-box reverse proxy/TLS** — HTTPS for
-  `grafana.claude-analytics.scopicdev.com` / `dashboard.…` / `otel.…` is terminated
+  `grafana.claude-analytics.example.com` / `dashboard.…` / `otel.…` is terminated
   **upstream** (ALB/Cloudflare → instance). Confirm the terminator in AWS/DNS before any
   hostname cutover.
-- **Auth:** Grafana uses Keycloak OIDC (`auth.scopicsoftware.com`, realm `ScopicSoftware`,
+- **Auth:** Grafana uses Keycloak OIDC (`auth.example.com`, realm `YourCompany`,
   client `claude-code-analytics`; roles `grafana-admin`→Admin, `grafana-viewer`→Viewer).
   The web app has its own login (`WEB_AUTH_ENABLED`, `WEB_LOCAL_LOGIN_ENABLED`). Secrets
   live in the box's `.env` (`OTEL_AUTH_TOKEN`, `KEYCLOAK_*`, `DASHBOARD_*`) and

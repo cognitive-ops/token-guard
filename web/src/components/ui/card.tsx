@@ -52,7 +52,7 @@ export function SectionHeading({
   return (
     <div className="mb-4 mt-8 flex items-baseline gap-3">
       <div className="flex items-center gap-1.5">
-        <h2 className="text-base font-semibold text-[var(--color-scopic)]">{title}</h2>
+        <h2 className="text-base font-semibold text-[var(--color-brand)]">{title}</h2>
         {info && <InfoButton doc={info} />}
       </div>
       {hint && <span className="text-xs text-[var(--color-muted)]">{hint}</span>}

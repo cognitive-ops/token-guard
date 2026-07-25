@@ -59,7 +59,7 @@ export function InfoButton({ doc }: { doc: MetricDoc }) {
         aria-label={`About: ${doc.title}`}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-4 w-4 items-center justify-center rounded-full border border-[var(--color-panel-border)] text-[10px] font-bold leading-none text-[var(--color-muted)] transition-colors hover:border-[var(--color-scopic)] hover:text-[var(--color-scopic)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-scopic)]"
+        className="flex h-4 w-4 items-center justify-center rounded-full border border-[var(--color-panel-border)] text-[10px] font-bold leading-none text-[var(--color-muted)] transition-colors hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
       >
         i
       </button>
@@ -77,16 +77,16 @@ export function InfoButton({ doc }: { doc: MetricDoc }) {
             <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{doc.what}</p>
             <dl className="mt-2 space-y-1.5 text-xs">
               <div>
-                <dt className="font-medium text-[var(--color-scopic)]">Source</dt>
+                <dt className="font-medium text-[var(--color-brand)]">Source</dt>
                 <dd className="text-[var(--color-muted)]">{doc.source}</dd>
               </div>
               <div>
-                <dt className="font-medium text-[var(--color-scopic)]">How it&apos;s calculated</dt>
+                <dt className="font-medium text-[var(--color-brand)]">How it&apos;s calculated</dt>
                 <dd className="text-[var(--color-muted)]">{doc.calc}</dd>
               </div>
               {doc.query && (
                 <div>
-                  <dt className="font-medium text-[var(--color-scopic)]">Query</dt>
+                  <dt className="font-medium text-[var(--color-brand)]">Query</dt>
                   <dd>
                     <code className="block break-words rounded bg-[var(--color-panel-2)] px-1.5 py-1 font-mono text-[10px] text-[var(--color-text)]">
                       {doc.query}

@@ -1,5 +1,5 @@
 {
-  "uid": "scopic-prompt-explorer",
+  "uid": "prompt-explorer",
   "title": "Prompt Explorer — User Prompts (local only)",
   "tags": ["claude-code", "prompts", "local"],
   "editable": true,

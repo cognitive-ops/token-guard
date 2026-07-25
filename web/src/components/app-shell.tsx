@@ -23,7 +23,7 @@ export function AppShell({
         <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
           <Link href="/overview" className="flex shrink-0 items-center gap-2" aria-label="Token Guard Claude Analytics">
             <Image
-              src="/scopic-icon.png"
+              src="/brand-icon.png"
               alt="Token Guard"
               width={256}
               height={256}

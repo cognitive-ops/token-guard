@@ -56,7 +56,7 @@ export default async function DeveloperPage({
       <PageHeader title="Developer" tagline={user}>
         A single developer&apos;s Claude Code usage. Cost figures are the{" "}
         <strong className="text-[var(--color-text)]">OTEL estimate</strong>, not the bill. Tap any{" "}
-        <span className="font-semibold text-[var(--color-scopic)]">ⓘ</span> for details.
+        <span className="font-semibold text-[var(--color-brand)]">ⓘ</span> for details.
       </PageHeader>
 
       <Suspense key={`summary-${key}`} fallback={<KpiSkeleton />}>

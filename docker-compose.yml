@@ -8,8 +8,8 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
-      - "4317:4317"   # OTLP gRPC (otel.claude-analytics.scopicdev.com)
-      - "4318:4318"   # OTLP HTTP (otel-http.claude-analytics.scopicdev.com)
+      - "4317:4317"   # OTLP gRPC (otel.claude-analytics.example.com)
+      - "4318:4318"   # OTLP HTTP (otel-http.claude-analytics.example.com)
       - "13133:13133" # Health check
     depends_on:
       - prometheus
@@ -150,13 +150,13 @@ services:
     build: ./grafana
     container_name: grafana
     ports:
-      - "3000:3000"   # Grafana (grafana.claude-analytics.scopicdev.com)
+      - "3000:3000"   # Grafana (grafana.claude-analytics.example.com)
     environment:
       # Hour-of-day x day heatmap panel used by the Developer Timeline dashboard
       - GF_INSTALL_PLUGINS=marcusolsson-hourly-heatmap-panel
       - GF_SECURITY_ADMIN_USER=${DASHBOARD_USERNAME:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${DASHBOARD_PASSWORD:-admin}
-      - GF_SERVER_ROOT_URL=https://grafana.claude-analytics.scopicdev.com
+      - GF_SERVER_ROOT_URL=https://grafana.claude-analytics.example.com
       - GF_SERVER_SERVE_FROM_SUB_PATH=false
       # allow the Token Guard logo <img> in dashboard text panels
       - GF_PANELS_DISABLE_SANITIZE_HTML=true
@@ -192,7 +192,7 @@ services:
       # Token Guard logo for the in-dashboard header text panels (served at /public/img/).
       # The favicon + nav/login logo are baked into the image (grafana/Dockerfile).
       - ./token-guard-logo.png:/usr/share/grafana/public/img/token-guard-logo.png:ro
-      - ./scopic-icon.png:/usr/share/grafana/public/img/scopic-icon.png:ro
+      - ./brand-icon.png:/usr/share/grafana/public/img/brand-icon.png:ro
     depends_on:
       - prometheus
       - loki

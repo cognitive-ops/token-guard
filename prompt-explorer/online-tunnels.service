@@ -8,7 +8,7 @@ Type=simple
 # adjust the path if your checkout lives elsewhere
 WorkingDirectory=%h/Workspaces/claude-code-roi-analytics/prompt-explorer
 ExecStart=/usr/bin/env bash %h/Workspaces/claude-code-roi-analytics/prompt-explorer/online-tunnels.sh
-Environment=AWS_PROFILE=scopic-ml-development
+Environment=AWS_PROFILE=your-aws-profile
 Restart=always
 RestartSec=10
 

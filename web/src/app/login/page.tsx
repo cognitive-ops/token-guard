@@ -72,7 +72,7 @@ export default async function LoginPage({
           <form action={ssoSignIn}>
             <button
               type="submit"
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-[var(--color-scopic)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-scopic-light)]"
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-[var(--color-brand)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-brand-light)]"
             >
               Sign in with Token Guard SSO
             </button>
@@ -97,7 +97,7 @@ export default async function LoginPage({
                 name="username"
                 autoComplete="username"
                 defaultValue=""
-                className="w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-ink)] px-3 py-2 text-sm outline-none focus:border-[var(--color-scopic)]"
+                className="w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-ink)] px-3 py-2 text-sm outline-none focus:border-[var(--color-brand)]"
               />
             </div>
             <div>
@@ -108,12 +108,12 @@ export default async function LoginPage({
                 name="password"
                 type="password"
                 autoComplete="current-password"
-                className="w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-ink)] px-3 py-2 text-sm outline-none focus:border-[var(--color-scopic)]"
+                className="w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-ink)] px-3 py-2 text-sm outline-none focus:border-[var(--color-brand)]"
               />
             </div>
             <button
               type="submit"
-              className="w-full rounded-md border border-[var(--color-scopic)] px-4 py-2.5 text-sm font-semibold text-[var(--color-scopic-light)] transition-colors hover:bg-[var(--color-scopic)]/10"
+              className="w-full rounded-md border border-[var(--color-brand)] px-4 py-2.5 text-sm font-semibold text-[var(--color-brand-light)] transition-colors hover:bg-[var(--color-brand)]/10"
             >
               Sign In
             </button>

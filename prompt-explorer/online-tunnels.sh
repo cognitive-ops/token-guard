@@ -10,8 +10,8 @@
 # Run it in a terminal and leave it open; Ctrl-C tears everything down.
 set -uo pipefail
 cd "$(dirname "$0")" || exit 1
-PROFILE="${AWS_PROFILE:-scopic-ml-development}"
-INSTANCE="${SSM_INSTANCE:-i-0fe9d2092e0ab25cd}"
+PROFILE="${AWS_PROFILE:-your-aws-profile}"
+INSTANCE="${SSM_INSTANCE:-<EC2_INSTANCE_ID>}"
 
 # The relay carries production Loki (raw user prompts) + Prometheus with NO auth, so it
 # must bind a PRIVATE interface the Grafana container can reach but the LAN cannot, never 0.0.0.0.

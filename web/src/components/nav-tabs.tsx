@@ -25,7 +25,7 @@ export function NavTabs() {
             prefetch
             className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
               active
-                ? "bg-[var(--color-scopic)]/12 text-[var(--color-scopic)]"
+                ? "bg-[var(--color-brand)]/12 text-[var(--color-brand)]"
                 : "text-[var(--color-muted)] hover:bg-[var(--color-panel-2)] hover:text-[var(--color-text)]"
             }`}
           >

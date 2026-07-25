@@ -70,7 +70,7 @@ export function EChart({
 
   useEffect(() => {
     if (!ref.current) return;
-    const themeName = `scopic-${mode}`;
+    const themeName = `brand-${mode}`;
     echarts.registerTheme(themeName, echartsTheme(mode));
     const chart = echarts.init(ref.current, themeName, { renderer: "canvas" });
     chart.setOption(option);

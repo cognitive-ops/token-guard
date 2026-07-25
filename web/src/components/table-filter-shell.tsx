@@ -47,7 +47,7 @@ export function TableFilterShell({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={placeholder}
-            className="w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-bg)] py-1.5 pl-8 pr-3 text-sm outline-none focus:border-[var(--color-scopic)]"
+            className="w-full rounded-md border border-[var(--color-panel-border)] bg-[var(--color-bg)] py-1.5 pl-8 pr-3 text-sm outline-none focus:border-[var(--color-brand)]"
           />
         </div>
         <span className="shrink-0 text-xs text-[var(--color-muted)]">

@@ -26,7 +26,7 @@ export function MonthPicker({
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
         aria-label="Month"
-        className="flex items-center gap-2 rounded-md border border-[var(--color-panel-border)] bg-[var(--color-panel)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-scopic)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-scopic)]"
+        className="flex items-center gap-2 rounded-md border border-[var(--color-panel-border)] bg-[var(--color-panel)] px-3 py-1.5 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-brand)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M3 10h18M8 2v4M16 2v4" />
@@ -41,7 +41,7 @@ export function MonthPicker({
               key={m.token}
               onSelect={() => select(m.token)}
               className={`cursor-pointer rounded-md px-2.5 py-1.5 text-sm outline-none data-[highlighted]:bg-[var(--color-panel-2)] ${
-                m.token === active ? "font-semibold text-[var(--color-scopic)]" : "text-[var(--color-text)]"
+                m.token === active ? "font-semibold text-[var(--color-brand)]" : "text-[var(--color-text)]"
               }`}
             >
               {m.label}

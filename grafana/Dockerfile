@@ -3,8 +3,8 @@
 # Pinned version because the patches target version-specific frontend-bundle assets.
 FROM grafana/grafana:13.0.2
 
-COPY branding/scopic_icon.svg /tmp/scopic_icon.svg
-COPY branding/scopic_text_logo.svg /tmp/scopic_text_logo.svg
+COPY branding/brand-icon.svg /tmp/brand-icon.svg
+COPY branding/brand-text-logo.svg /tmp/brand-text-logo.svg
 COPY branding/fav32.png /tmp/fav32.png
 COPY branding/apple-touch-icon.png /tmp/apple-touch-icon.png
 COPY branding/login_background_dark.svg /tmp/login_background_dark.svg
@@ -21,9 +21,9 @@ RUN set -e; cd /usr/share/grafana/public; \
        sed -i 's/Welcome to Grafana/Welcome to Token Guard/g') || true; \
     # --- logo: nav + login icon (hashed bundle asset) and the wordmark ---
     for f in build/static/img/grafana_icon.*.svg img/grafana_icon.svg img/grafana_mask_icon.svg; do \
-      [ -e "$f" ] && cp /tmp/scopic_icon.svg "$f"; done; \
+      [ -e "$f" ] && cp /tmp/brand-icon.svg "$f"; done; \
     for f in build/static/img/grafana_text_logo_*.svg; do \
-      [ -e "$f" ] && cp /tmp/scopic_text_logo.svg "$f"; done; \
+      [ -e "$f" ] && cp /tmp/brand-text-logo.svg "$f"; done; \
     # --- favicons (index.html links public/build/img/fav32.png — the real one) ---
     for f in img/fav32.png build/img/fav32.png build/static/img/fav32.*.png; do \
       [ -e "$f" ] && cp /tmp/fav32.png "$f"; done; \

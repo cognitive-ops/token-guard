@@ -106,7 +106,7 @@ export async function ExporterHealthSection({ token }: { token: string }) {
       <dl className="space-y-4 text-sm">
         <div>
           <dt className="text-xs uppercase tracking-wide text-[var(--color-muted)]">Last successful poll</dt>
-          <dd className="text-lg font-semibold text-[var(--color-scopic)]">{e.lastSuccess === null ? "—" : formatAgo(e.lastSuccess, now)}</dd>
+          <dd className="text-lg font-semibold text-[var(--color-brand)]">{e.lastSuccess === null ? "—" : formatAgo(e.lastSuccess, now)}</dd>
         </div>
         <div>
           <dt className="text-xs uppercase tracking-wide text-[var(--color-muted)]">Errors</dt>

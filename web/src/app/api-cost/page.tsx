@@ -22,7 +22,7 @@ export default async function ApiCostPage({
       <PageHeader title="API Cost" tagline="billed Anthropic spend by workspace">
         Authoritative billed USD from the Anthropic <strong className="text-[var(--color-text)]">Cost Report API</strong>,
         per workspace (one workspace per product/client). Pick a month and{" "}
-        <span className="font-semibold text-[var(--color-scopic)]">↓ CSV</span> for a finance report.
+        <span className="font-semibold text-[var(--color-brand)]">↓ CSV</span> for a finance report.
       </PageHeader>
       <Suspense key={month} fallback={<KpiSkeleton />}>
         <ApiCostSection month={month} />

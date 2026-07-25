@@ -2,21 +2,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
   CloudWatch alarms for the Claude Code Analytics stack (Prometheus/Grafana/Loki/otel
-  on i-0fe9d2092e0ab25cd behind scopic-ai-dev-alb). 17 alarms -> SNS email
+  on <EC2_INSTANCE_ID> behind internal-dev-alb). 17 alarms -> SNS email
   (5 host/ALB + 8 per-container "down" + 4 billing-exporter health alarms).
 
 Parameters:
   InstanceId:
     Type: String
-    Default: i-0fe9d2092e0ab25cd
+    Default: <EC2_INSTANCE_ID>
     Description: EC2 instance running the claude-analytics stack.
   AlertEmail:
     Type: String
-    Default: wayan.w@scopicsoftware.com
+    Default: ops@example.com
     Description: Email subscribed to the alerts topic (must confirm via emailed link).
   LoadBalancerDimension:
     Type: String
-    Default: app/scopic-ai-dev-alb/4c6bfb57056cac07
+    Default: <ALB_ARN_SUFFIX>
     Description: ALB dimension value (ARN suffix) for CloudWatch.
   GrafanaTargetGroupDimension:
     Type: String

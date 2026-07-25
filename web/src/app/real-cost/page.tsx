@@ -28,7 +28,7 @@ export default async function RealCostPage({
         <strong className="text-[var(--color-text)]">Real cost is not the OTEL estimate.</strong>{" "}
         Seat developers&apos; real cost is the flat seat fee plus metered overage; service keys are
         billed at API rates from the Cost Report API. Tap any{" "}
-        <span className="font-semibold text-[var(--color-scopic)]">ⓘ</span> for details.
+        <span className="font-semibold text-[var(--color-brand)]">ⓘ</span> for details.
       </PageHeader>
 
       <Suspense fallback={<KpiSkeleton />}>

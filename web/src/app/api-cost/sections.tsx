@@ -70,7 +70,7 @@ export async function ApiCostSection({ month }: { month: string }) {
           action={
             <a
               href={`/api-cost/export?month=${d.month}`}
-              className="rounded-md border border-[var(--color-scopic)] px-3 py-1 text-xs font-semibold text-[var(--color-scopic)] transition-colors hover:bg-[var(--color-scopic)]/10"
+              className="rounded-md border border-[var(--color-brand)] px-3 py-1 text-xs font-semibold text-[var(--color-brand)] transition-colors hover:bg-[var(--color-brand)]/10"
             >
               ↓ CSV
             </a>
