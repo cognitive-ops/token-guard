@@ -1,18 +1,24 @@
-# Reproducible data pipeline for the prompt-intent classifier.
+# Reproducible data + training pipeline for the prompt-intent classifier.
 #
-#   raw (sensitive)  --clean-->  interim (sensitive)  --scrub-->  processed (SAFE)
+#   raw (sensitive) --clean--> interim (sensitive) --scrub--> processed (SAFE) --train--> model --export--> onnx
 #
-# Data-acquisition (Stage 0) is a MANUAL prerequisite, not a dvc stage, because
-# it needs a prod SSM tunnel to Loki:
+# Data-acquisition (Stage 0) AND labeling (Stage 3) are MANUAL prerequisites, not
+# dvc stages — extract needs a Loki tunnel, labeling costs real money and is
+# non-deterministic (LLM calls):
 #     python src/extract_prompts_full.py    # -> data/raw/loki_prompts.jsonl
+#     python src/label.py run               # -> data/processed/labeled.jsonl (needs ANTHROPIC_API_KEY)
 # plus dropping any restored backup dumps into data/raw/*.jsonl.
+# `dvc repro` on `train` will fail with a missing-file error until labeled.jsonl exists.
 #
 # Sensitive-data policy (see also .dvcignore):
 #   * data/raw/**            : deps only, NEVER a tracked out -> never cached/pushed.
 #   * data/interim/clean.jsonl : out with `cache: false` -> may contain secrets,
 #                                stays local, never pushed to a DVC remote.
 #   * data/processed/**      : gitleaks-scrubbed, secret-free -> cached & safe to push.
-# Only `dvc push` the processed outputs; raw/interim never leave the machine.
+#   * model/onnx outputs     : weights only, no prompt content -> cached & safe to push.
+# Only `dvc push` the processed/model/onnx outputs; raw/interim never leave the machine.
+# `deploy` (publishing onnx into deploy-model/, committed via Git LFS) stays a manual
+# `make deploy` step, not a dvc stage — those files are git/LFS-owned, not DVC-cached.
 
 stages:
   clean:
@@ -33,3 +39,39 @@ stages:
     outs:
       - data/processed/labelable.jsonl              # secret-free — safe to cache/push
       - data/processed/secret_quarantine_ids.txt    # audit: prompt_ids only, no secrets
+
+  train:
+    # train_ft.py (imported by train_coarse_mt.py) hardcodes the older batch-flow
+    # paths data/labeled.jsonl + data/label_items.jsonl; bridge the DVC-flow outputs
+    # to those names rather than editing the many scripts that share those constants
+    # (train.py, train_ft2/3.py, gold_set.py, benchmark.py, error_analysis.py, ...).
+    cmd: >-
+      cp data/processed/labelable.jsonl data/label_items.jsonl &&
+      cp data/processed/labeled.jsonl data/labeled.jsonl &&
+      python src/train_coarse_mt.py
+    deps:
+      - src/train_coarse_mt.py
+      - src/train_ft.py
+      - src/taxonomy.py
+      - data/processed/labelable.jsonl
+      - data/processed/labeled.jsonl      # manual Stage 3 output — see header comment
+    outs:
+      - data/model_coarse_mt_xlm-roberta-base.pt
+
+  export:
+    # tune_thresholds.py rewrites meta.json in place after export_onnx.py writes it,
+    # so both run as one stage — DVC can't have two stages each own the same out file.
+    cmd: python src/export_onnx.py && python src/tune_thresholds.py
+    deps:
+      - src/export_onnx.py
+      - src/tune_thresholds.py
+      - src/train_ft.py
+      - src/taxonomy.py
+      - data/model_coarse_mt_xlm-roberta-base.pt
+      - data/label_items.jsonl
+      - data/labeled.jsonl
+    outs:
+      - data/onnx/model.onnx
+      - data/onnx/model.int8.onnx
+      - data/onnx/tokenizer.json
+      - data/onnx/meta.json

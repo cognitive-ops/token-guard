@@ -1,7 +1,7 @@
 [core]
     remote = storage
 ['remote "storage"']
-    url = s3://claude-code-roi-dvc2-320963574916/prompt-intent
+    url = s3://your-bucket-name/prompt-intent
     region = us-east-1
     sse = aws:kms
-    sse_kms_key_id = arn:aws:kms:us-east-1:320963574916:key/d088e329-1321-4919-8abb-933edd92cfda
+    sse_kms_key_id = arn:aws:kms:us-east-1:<AWS_ACCOUNT_ID>:key/<KMS_KEY_ID>
