@@ -31,10 +31,7 @@
           "type": "postgres",
           "uid": "postgres"
         },
-        "query": {
-          "query": "SELECT DISTINCT user_email FROM user_prompts ORDER BY 1",
-          "refId": "A"
-        },
+        "query": "SELECT DISTINCT user_email FROM user_prompts ORDER BY 1",
         "definition": "SELECT DISTINCT user_email FROM user_prompts ORDER BY 1",
         "includeAll": true,
         "allValue": "%",
