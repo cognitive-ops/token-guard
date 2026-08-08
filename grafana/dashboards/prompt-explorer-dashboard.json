@@ -28,7 +28,7 @@
         "label": "Developer",
         "type": "query",
         "datasource": {
-          "type": "postgres",
+          "type": "grafana-postgresql-datasource",
           "uid": "postgres"
         },
         "query": "SELECT DISTINCT user_email FROM user_prompts ORDER BY 1",
@@ -90,7 +90,7 @@
         "y": 3
       },
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "postgres"
       },
       "fieldConfig": {
@@ -112,7 +112,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "postgres"
           },
           "format": "table",
@@ -133,7 +133,7 @@
         "y": 6
       },
       "datasource": {
-        "type": "postgres",
+        "type": "grafana-postgresql-datasource",
         "uid": "postgres"
       },
       "fieldConfig": {
@@ -194,7 +194,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "postgres",
+            "type": "grafana-postgresql-datasource",
             "uid": "postgres"
           },
           "format": "table",
