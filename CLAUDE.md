@@ -16,6 +16,7 @@ metrics + logs → an OTEL Collector fans them out to **Prometheus** (metrics) a
 | `web/` | Next.js dashboard app (the going-forward UI). Data layer in `web/src/lib/data/`. |
 | `billing-exporter/` | Pulls Anthropic Admin Cost/Usage APIs → real-cost Prometheus gauges. |
 | `prompt-lang-exporter/`, `prompt-intent-exporter/` | Classify prompts from Loki → Prometheus gauges (see "Pre-calculated views"). |
+| `prompt-store-exporter/` | Writes raw prompt text from Loki into Postgres (`user_prompts` table) — per-developer prompt content, queryable by SQL. |
 | `prompt-intent-classifier/` | Training/eval for the ONNX intent model the intent-exporter loads. |
 | `prompt-explorer/` | Tooling to view real prod data locally over an SSM tunnel. |
 | `alarms/` | CloudWatch container-health alarms (CloudFormation + agent config). |
@@ -124,3 +125,6 @@ recording rules; that's the path to making every panel snapshot-fast.
 - Exporters `GAUGE.clear()` then repopulate each hourly poll; a scrape in that millisecond
   window briefly sees missing series.
 - `prompt-lang-exporter` is memory-tight (holds the 30d prompt corpus while polling).
+- `user_prompts` (Postgres) has no retention/cleanup job — it grows unbounded and holds
+  raw, unredacted prompt text. Restrict DB access; add a `DELETE ... WHERE event_timestamp
+  < ...` cron if you need retention.

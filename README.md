@@ -18,9 +18,11 @@ flowchart LR
 
     ADMIN --> BEXP["billing-exporter"] --> PROM
     LOKI --> PLEXP["prompt-lang-exporter"] --> PROM
+    LOKI --> PSEXP["prompt-store-exporter"] --> PG[("Postgres")]
 
     PROM --> GRAF["Grafana"]
     LOKI --> GRAF
+    PG --> GRAF
 ```
 
 Run: `docker compose up -d --build` (see [architecture.md](docs/architecture.md) for the full design).
@@ -34,6 +36,7 @@ Run: `docker compose up -d --build` (see [architecture.md](docs/architecture.md)
 | [`billing-exporter/`](billing-exporter/) | Real billing from the Admin API ([README](billing-exporter/README.md)) |
 | [`prompt-lang-exporter/`](prompt-lang-exporter/) | Prompt-language detection from Loki ([README](prompt-lang-exporter/README.md)) |
 | [`prompt-intent-exporter/`](prompt-intent-exporter/) | Prompt **intent + behavior** classification (local ONNX model) → Usage Patterns dashboard ([README](prompt-intent-exporter/README.md)) |
+| [`prompt-store-exporter/`](prompt-store-exporter/) | Writes raw prompt **text** from Loki into Postgres, per developer, queryable by SQL ([README](prompt-store-exporter/README.md)) |
 | [`prompt-intent-classifier/`](prompt-intent-classifier/) | Trains/evaluates the intent+behavior model (LLM-labeled → distilled); exports ONNX ([README](prompt-intent-classifier/README.md)) |
 | `alarms/` | AWS CloudWatch alarms for the stack |
 

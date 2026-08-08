@@ -132,6 +132,44 @@ services:
     restart: unless-stopped
     mem_limit: 128m
 
+  # Postgres (raw prompt-content store, for per-developer SQL queries)
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-tokenguard}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-tokenguard}
+    ports:
+      - "5432:5432"   # exposed for psql/DBeaver access to query prompt content directly
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tokenguard}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    mem_limit: 256m
+
+  # Prompt-store exporter (writes raw user_prompt text from Loki into Postgres,
+  # queryable per-developer with SQL)
+  prompt-store-exporter:
+    build: ./prompt-store-exporter
+    container_name: prompt-store-exporter
+    environment:
+      - LOKI_URL=http://loki:3100
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-tokenguard}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tokenguard}
+      - POLL_INTERVAL_SECONDS=60
+      - LOOKBACK_MINUTES=20
+    depends_on:
+      loki:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 128m
+
   # Loki (log/event storage)
   loki:
     image: grafana/loki:3.7.1
@@ -185,6 +223,10 @@ services:
       - GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_STRICT=true
       - GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=true
       - GF_AUTH_OAUTH_ALLOW_INSECURE_EMAIL_LOOKUP=true
+      # consumed by grafana/provisioning/datasources/datasources.yaml (${VAR} expansion)
+      - POSTGRES_DB=${POSTGRES_DB:-tokenguard}
+      - POSTGRES_USER=${POSTGRES_USER:-tokenguard}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
@@ -196,6 +238,7 @@ services:
     depends_on:
       - prometheus
       - loki
+      - postgres
     restart: unless-stopped
     mem_limit: 512m
 
@@ -203,3 +246,4 @@ volumes:
   prometheus_data:
   grafana_data:
   loki_data:
+  postgres_data:

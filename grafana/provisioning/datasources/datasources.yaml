@@ -15,3 +15,16 @@ datasources:
     editable: true
     jsonData:
       maxLines: 1000
+
+  - name: Postgres
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: ${POSTGRES_DB}
+    user: ${POSTGRES_USER}
+    editable: true
+    secureJsonData:
+      password: ${POSTGRES_PASSWORD}
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1600
