@@ -62,6 +62,14 @@ so validate PromQL with `query_range`, not instant queries at `now`.
   `grafana.claude-analytics.example.com` / `dashboard.…` / `otel.…` is terminated
   **upstream** (ALB/Cloudflare → instance). Confirm the terminator in AWS/DNS before any
   hostname cutover.
+- **Pending deploy:** `postgres` + `prompt-store-exporter` (raw prompt-text store, see
+  `prompt-store-exporter/README.md`) and the Grafana **Prompt Explorer** dashboard/card on
+  Home only exist in local `docker-compose` so far — not yet copied to the box. Until
+  deployed there, the Home page's "Prompt Explorer" card 404s on the shared/production
+  Grafana. When deploying: keep `postgres`'s `5432` **internal-only** (no host port
+  publish) like `prometheus`/`loki` — it holds unredacted developer prompt text, and unlike
+  those two it isn't intended for direct psql access from the internet, only via Grafana's
+  proxied datasource. Also copy `POSTGRES_USER/PASSWORD/DB` into the box's `.env`.
 - **Auth:** Grafana uses Keycloak OIDC (`auth.example.com`, realm `YourCompany`,
   client `claude-code-analytics`; roles `grafana-admin`→Admin, `grafana-viewer`→Viewer).
   The web app has its own login (`WEB_AUTH_ENABLED`, `WEB_LOCAL_LOGIN_ENABLED`). Secrets
