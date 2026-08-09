@@ -16,6 +16,7 @@ metrics + logs → an OTEL Collector fans them out to **Prometheus** (metrics) a
 | `web/` | Next.js dashboard app (the going-forward UI). Data layer in `web/src/lib/data/`. |
 | `billing-exporter/` | Pulls Anthropic Admin Cost/Usage APIs → real-cost Prometheus gauges. |
 | `prompt-lang-exporter/`, `prompt-intent-exporter/` | Classify prompts from Loki → Prometheus gauges (see "Pre-calculated views"). |
+| `prompt-quality-exporter/` | Scores prompt clarity/specificity/structure/robustness via an LLM judge (Anthropic or OpenAI) → Prometheus gauges + a `claude-code-quality` Loki stream. Unlike the other exporters this costs real money per new prompt scored — see its README for the cost guards (disk cache, per-poll cap). |
 | `prompt-store-exporter/` | Writes raw prompt text from Loki into Postgres (`user_prompts` table) — per-developer prompt content, queryable by SQL. |
 | `prompt-intent-classifier/` | Training/eval for the ONNX intent model the intent-exporter loads. |
 | `prompt-explorer/` | Tooling to view real prod data locally over an SSM tunnel. |
@@ -104,6 +105,9 @@ pre-compute counts into Prometheus gauges, read in <1 ms:
   `claude_prompt_count_by_{terminal,os}` (prompt-lang-exporter)
 - `claude_prompt_language_count{language,user_email}` (prompt-lang-exporter)
 - `claude_prompt_{intent,behavior,command}_count{…,user_email}` (prompt-intent-exporter)
+- `claude_prompt_quality_{overall_avg,dimension_avg,tier_count,top_issue_count}{…,user_email}`
+  (prompt-quality-exporter) — LLM-judged, so this snapshot only grows on new prompts up to
+  `MAX_NEW_PER_POLL`/poll, not the full lookback window every time (cost control)
 
 These gauges are a **fixed ~30-day snapshot**, so they don't honor an arbitrary time
 picker. Both frontends therefore use a **hybrid**: the fast Prometheus gauge for ~30-day

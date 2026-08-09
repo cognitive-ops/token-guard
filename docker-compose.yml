@@ -101,6 +101,27 @@ services:
     restart: unless-stopped
     mem_limit: 1g
 
+  # Prompt-quality exporter (scores prompt clarity/specificity/structure/robustness
+  # via an LLM judge — Anthropic or OpenAI). Costs real money per new prompt scored;
+  # see prompt-quality-exporter/README.md for the cost guards (disk cache, poll cap).
+  prompt-quality-exporter:
+    build: ./prompt-quality-exporter
+    container_name: prompt-quality-exporter
+    environment:
+      - LOKI_URL=http://loki:3100
+      - LOOKBACK_DAYS=7
+      - POLL_INTERVAL_SECONDS=3600
+      - MAX_NEW_PER_POLL=300
+      - CACHE_FILE=/cache/quality_cache.jsonl
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - prompt_quality_cache:/cache
+    depends_on:
+      - loki
+    restart: unless-stopped
+    mem_limit: 512m
+
   # Prompt-tool exporter (aggregates tool_result events by tool_name + user_email)
   prompt-tool-exporter:
     build: ./prompt-tool-exporter
@@ -247,3 +268,4 @@ volumes:
   grafana_data:
   loki_data:
   postgres_data:
+  prompt_quality_cache:

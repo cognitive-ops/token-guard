@@ -1,0 +1,562 @@
+{
+  "uid": "prompt-quality",
+  "title": "Prompt Quality",
+  "tags": ["claude-code", "quality", "coaching"],
+  "editable": true,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5m",
+  "time": { "from": "now-7d", "to": "now" },
+  "timezone": "",
+  "templating": { "list": [] },
+  "links": [],
+  "annotations": { "list": [] },
+  "panels": [
+    {
+      "type": "text",
+      "id": 1,
+      "transparent": true,
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;align-items:center;gap:12px;padding:4px 2px;border-bottom:2px solid #017AFF;\"><span style=\"color:#017AFF;font-size:16px;font-weight:700;\">📝 Prompt quality — clarity, specificity, structure, robustness</span><span style=\"color:#8a93a2;font-size:13px;\">scored by an LLM judge (prompt-quality-exporter); coaching signal, not a person's performance grade</span></div>"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Avg overall score (org)",
+      "description": "0-100, equal-weighted average of the 4 rubric dimensions. Materialized snapshot from prompt-quality-exporter over its lookback window (default 7d, independent of the time picker).",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 0, "y": 2, "w": 6, "h": 5 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 40 },
+              { "color": "yellow", "value": 60 },
+              { "color": "green", "value": 80 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "expr": "avg(claude_prompt_quality_overall_avg)",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Needs attention (poor + fair)",
+      "description": "Share of scored prompts in the bottom two tiers (overall < 60).",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 6, "y": 2, "w": 6, "h": 5 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 25 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "expr": "100 * sum(claude_prompt_quality_tier_count{tier=~\"poor|fair\"}) / sum(claude_prompt_quality_tier_count)",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Prompts scored (window)",
+      "description": "Real prompts with a quality score in the exporter's lookback window.",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 12, "y": 2, "w": 6, "h": 5 },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "expr": "claude_prompt_quality_prompts_total",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Est. LLM-judge cost since start",
+      "description": "Cumulative estimated USD spent scoring prompts since the exporter last (re)started — resets on restart. Approximate, from token usage × list price.",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 18, "y": 2, "w": 6, "h": 5 },
+      "fieldConfig": { "defaults": { "unit": "currencyUSD", "decimals": 4 } },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "expr": "claude_prompt_quality_exporter_cost_usd_total",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": 6,
+      "transparent": true,
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 7 },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;align-items:center;gap:12px;padding:4px 2px;border-bottom:2px solid #017AFF;\"><span style=\"color:#017AFF;font-size:16px;font-weight:700;\">📊 Distribution (org)</span></div>"
+      }
+    },
+    {
+      "id": 7,
+      "type": "piechart",
+      "title": "Quality tier mix (org)",
+      "description": "poor < 40, fair < 60, good < 80, excellent >= 80 (overall score).",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 0, "y": 9, "w": 8, "h": 9 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "values": ["value", "percent"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "editorMode": "code",
+          "expr": "sum by (tier)(claude_prompt_quality_tier_count)",
+          "legendFormat": "{{tier}}",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "piechart",
+      "title": "Top limiting issue (org)",
+      "description": "The single lowest-scoring dimension per prompt, i.e. what to coach on first. 'none' = every dimension scored 4-5.",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 8, "y": 9, "w": 8, "h": 9 },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "values": ["value", "percent"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "editorMode": "code",
+          "expr": "sum by (top_issue)(claude_prompt_quality_top_issue_count)",
+          "legendFormat": "{{top_issue}}",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "barchart",
+      "title": "Avg score by dimension (org)",
+      "description": "1-5 scale. Lowest bar = the dimension developers most need coaching on org-wide.",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 16, "y": 9, "w": 8, "h": 9 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "max": 5,
+          "color": { "mode": "continuous-BlPu" },
+          "custom": { "orientation": "horizontal", "lineWidth": 1, "fillOpacity": 80 }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "legend": { "showLegend": false },
+        "xTickLabelRotation": 0,
+        "stacking": "none"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "editorMode": "code",
+          "expr": "avg by (dimension)(claude_prompt_quality_dimension_avg)",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "legendFormat": "{{dimension}}",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true },
+            "renameByName": { "dimension": "Dimension", "Value": "Score", "Value #A": "Score" }
+          }
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": 10,
+      "transparent": true,
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 18 },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;align-items:center;gap:12px;padding:4px 2px;border-bottom:2px solid #017AFF;\"><span style=\"color:#017AFF;font-size:16px;font-weight:700;\">👥 By developer</span><span style=\"color:#8a93a2;font-size:13px;\">sorted worst-first — who could benefit most from prompt-writing coaching</span></div>"
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Overall quality by developer",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "filterable": true }, "unit": "short", "decimals": 0 }
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Score", "desc": false }]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "format": "table",
+          "expr": "claude_prompt_quality_overall_avg",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true },
+            "renameByName": { "user_email": "Developer", "Value": "Score" }
+          }
+        },
+        { "id": "sortBy", "options": { "sort": [{ "field": "Score", "desc": false }] } }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "table",
+      "title": "Dimension averages by developer",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "filterable": true }, "unit": "short", "decimals": 1 }
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Score", "desc": false }]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "format": "table",
+          "expr": "claude_prompt_quality_dimension_avg",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true },
+            "renameByName": { "user_email": "Developer", "dimension": "Dimension", "Value": "Score" }
+          }
+        },
+        { "id": "sortBy", "options": { "sort": [{ "field": "Score", "desc": false }] } }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "table",
+      "title": "Top limiting issue by developer",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 0, "y": 30, "w": 12, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "filterable": true }, "unit": "short", "decimals": 0 }
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Prompts", "desc": true }]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "format": "table",
+          "expr": "claude_prompt_quality_top_issue_count",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true },
+            "renameByName": { "user_email": "Developer", "top_issue": "Issue", "Value": "Prompts" }
+          }
+        },
+        { "id": "sortBy", "options": { "sort": [{ "field": "Prompts", "desc": true }] } }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "table",
+      "title": "Tier by developer",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 12, "y": 30, "w": 12, "h": 10 },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "filterable": true }, "unit": "short", "decimals": 0 }
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Prompts", "desc": true }]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "format": "table",
+          "expr": "claude_prompt_quality_tier_count",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true },
+            "renameByName": { "user_email": "Developer", "tier": "Tier", "Value": "Prompts" }
+          }
+        },
+        { "id": "sortBy", "options": { "sort": [{ "field": "Prompts", "desc": true }] } }
+      ]
+    },
+    {
+      "type": "text",
+      "id": 15,
+      "transparent": true,
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 40 },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;align-items:center;gap:12px;padding:4px 2px;border-bottom:2px solid #017AFF;\"><span style=\"color:#017AFF;font-size:16px;font-weight:700;\">🔍 Drilldown</span><span style=\"color:#8a93a2;font-size:13px;\">live Loki stream, honors the time picker — per-prompt score, not org-wide snapshot</span></div>"
+      }
+    },
+    {
+      "id": 16,
+      "type": "logs",
+      "title": "Worst-scoring prompts (poor / fair)",
+      "description": "Raw claude-code-quality Loki entries. Line = prompt_id (no prompt text stored here, by design — join on prompt_id against user_prompts in Postgres, or the Prompt Explorer dashboard, for the text). Expand a row for the full dimension breakdown.",
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "gridPos": { "x": 0, "y": 42, "w": 24, "h": 12 },
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "expr": "{service_name=\"claude-code-quality\"} | tier=~\"poor|fair\"",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": 17,
+      "transparent": true,
+      "gridPos": { "h": 2, "w": 24, "x": 0, "y": 54 },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;align-items:center;gap:12px;padding:4px 2px;border-bottom:2px solid #017AFF;\"><span style=\"color:#017AFF;font-size:16px;font-weight:700;\">⚙️ Exporter health</span></div>"
+      }
+    },
+    {
+      "id": 18,
+      "type": "stat",
+      "title": "Newly scored last poll",
+      "description": "The main cost driver — each is one LLM call. Capped by MAX_NEW_PER_POLL.",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 0, "y": 56, "w": 8, "h": 5 },
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "expr": "claude_prompt_quality_exporter_new_scored_last_poll",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "type": "stat",
+      "title": "Exporter errors",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 8, "y": 56, "w": 8, "h": 5 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "expr": "claude_prompt_quality_exporter_errors",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "stat",
+      "title": "Time since last successful poll",
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "gridPos": { "x": 16, "y": 56, "w": 8, "h": 5 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 5400 },
+              { "color": "red", "value": 10800 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "orientation": "horizontal",
+        "justifyMode": "center"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+          "refId": "A",
+          "expr": "time() - claude_prompt_quality_exporter_last_success_timestamp",
+          "instant": true,
+          "range": false,
+          "editorMode": "code"
+        }
+      ]
+    }
+  ]
+}

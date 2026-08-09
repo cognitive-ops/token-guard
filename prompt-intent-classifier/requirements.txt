@@ -1,5 +1,6 @@
 # Versions intentionally unpinned; pin once a working set is confirmed.
 anthropic
+openai  # optional: only needed by score_quality.py's OpenAI fallback path
 requests
 numpy
 scikit-learn
