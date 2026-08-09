@@ -435,7 +435,8 @@
           "custom": { "align": "left", "cellOptions": { "type": "auto", "wrapText": true }, "filterable": true }
         },
         "overrides": [
-          { "matcher": { "id": "byName", "options": "prompt_text" }, "properties": [{ "id": "custom.width", "value": 600 }, { "id": "displayName", "value": "Prompt" }] },
+          { "matcher": { "id": "byName", "options": "prompt_text" }, "properties": [{ "id": "custom.width", "value": 420 }, { "id": "displayName", "value": "Prompt" }] },
+          { "matcher": { "id": "byName", "options": "suggestion" }, "properties": [{ "id": "custom.width", "value": 380 }, { "id": "displayName", "value": "Suggestion" }] },
           { "matcher": { "id": "byName", "options": "time" }, "properties": [{ "id": "displayName", "value": "Time" }, { "id": "custom.width", "value": 160 }] },
           { "matcher": { "id": "byName", "options": "user_email" }, "properties": [{ "id": "displayName", "value": "Developer" }, { "id": "custom.width", "value": 200 }] },
           { "matcher": { "id": "byName", "options": "overall_score" }, "properties": [{ "id": "displayName", "value": "Score" }, { "id": "custom.width", "value": 80 }] },
@@ -451,7 +452,7 @@
         {
           "datasource": { "type": "grafana-postgresql-datasource", "uid": "postgres" },
           "format": "table",
-          "rawSql": "SELECT pqs.event_timestamp AS \"time\", pqs.user_email, pqs.overall_score, pqs.tier, pqs.top_issue, pqs.clarity, pqs.specificity, pqs.structure, pqs.robustness, up.prompt_text FROM prompt_quality_scores pqs JOIN user_prompts up USING (prompt_id) WHERE pqs.category = 'real' AND pqs.tier IN ('poor', 'fair') AND $__timeFilter(pqs.event_timestamp) ORDER BY pqs.overall_score ASC, pqs.event_timestamp DESC LIMIT 200",
+          "rawSql": "SELECT pqs.event_timestamp AS \"time\", pqs.user_email, pqs.overall_score, pqs.tier, pqs.top_issue, pqs.suggestion, pqs.clarity, pqs.specificity, pqs.structure, pqs.robustness, up.prompt_text FROM prompt_quality_scores pqs JOIN user_prompts up USING (prompt_id) WHERE pqs.category = 'real' AND pqs.tier IN ('poor', 'fair') AND $__timeFilter(pqs.event_timestamp) ORDER BY pqs.overall_score ASC, pqs.event_timestamp DESC LIMIT 200",
           "refId": "A"
         }
       ]

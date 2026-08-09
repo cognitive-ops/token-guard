@@ -71,10 +71,12 @@ CREATE TABLE IF NOT EXISTS prompt_quality_scores (
     overall_score    SMALLINT,
     tier             TEXT,
     top_issue        TEXT,
+    suggestion       TEXT,
     scored_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_pqs_email_ts ON prompt_quality_scores (user_email, event_timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_pqs_ts ON prompt_quality_scores (event_timestamp DESC);
+ALTER TABLE prompt_quality_scores ADD COLUMN IF NOT EXISTS suggestion TEXT;
 """
 
 CANDIDATES_SQL = """
@@ -89,7 +91,7 @@ LIMIT %s
 UPSERT_SQL = """
 INSERT INTO prompt_quality_scores (
     prompt_id, user_email, event_timestamp, category,
-    clarity, specificity, structure, robustness, overall_score, tier, top_issue
+    clarity, specificity, structure, robustness, overall_score, tier, top_issue, suggestion
 ) VALUES %s
 ON CONFLICT (prompt_id) DO NOTHING
 """
@@ -144,6 +146,12 @@ _CONFIRM = re.compile(
     r"next|stop|thanks|thank you|ty|y post|yes post|\d+)\b",
     re.I,
 )
+# Pasted terminal/log output mistaken for a real ask (multi-line + looks like a
+# log line, a Prometheus exposition line, or shell-command output). Heuristic,
+# not exhaustive — found by inspecting actual "poor"-tier false positives.
+_LOG_MARKERS = re.compile(r"\b(INFO|WARN(?:ING)?|ERROR|DEBUG|HTTP/1\.\d|Traceback \(most recent call last\))\b")
+_EXPOSITION = re.compile(r"^#\s*(HELP|TYPE)\b", re.M)
+_SHELL_CMD = re.compile(r"^\s*(docker|kubectl|curl|wget|git|npm|pip|python|ls|cat|grep|systemctl|journalctl)\b")
 
 
 def categorize(p):
@@ -156,6 +164,10 @@ def categorize(p):
         return "control"
     if len(s) < 15 and _CONFIRM.match(s):
         return "control"
+    if "\n" in s and (
+        _LOG_MARKERS.search(s) or _EXPOSITION.search(s) or (_SHELL_CMD.match(s) and "|" in s)
+    ):
+        return "pasted_output"
     return "real"
 
 
@@ -243,7 +255,7 @@ def poll_once(conn, provider, client):
             # else: leave uncategorized for next poll (don't burn a "seen" row on a
             # real prompt we didn't actually score, so it's retried)
         else:
-            rows.append((pid, email, ts, cat, None, None, None, None, None, None, None))
+            rows.append((pid, email, ts, cat, None, None, None, None, None, None, None, None))
 
     def job(item):
         pid, email, text, ts = item
@@ -264,6 +276,7 @@ def poll_once(conn, provider, client):
                     overall,
                     qr.tier(overall),
                     sc["top_issue"],
+                    sc["suggestion"],
                 )
             except Exception as e:
                 if attempt == 2:
