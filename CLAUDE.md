@@ -16,7 +16,7 @@ metrics + logs → an OTEL Collector fans them out to **Prometheus** (metrics) a
 | `web/` | Next.js dashboard app (the going-forward UI). Data layer in `web/src/lib/data/`. |
 | `billing-exporter/` | Pulls Anthropic Admin Cost/Usage APIs → real-cost Prometheus gauges. |
 | `prompt-lang-exporter/`, `prompt-intent-exporter/` | Classify prompts from Loki → Prometheus gauges (see "Pre-calculated views"). |
-| `prompt-quality-exporter/` | Scores prompt clarity/specificity/structure/robustness via an LLM judge (Anthropic or OpenAI) → Prometheus gauges + a `claude-code-quality` Loki stream. Unlike the other exporters this costs real money per new prompt scored — see its README for the cost guards (disk cache, per-poll cap). |
+| `prompt-quality-exporter/` | Scores prompt clarity/specificity/structure/robustness via an LLM judge (Anthropic or OpenAI). Reads from and writes to **Postgres** (`user_prompts` → `prompt_quality_scores`), not Loki directly — Postgres is the durable full corpus; Loki's retention is short. Also emits Prometheus gauges. Unlike the other exporters this costs real money per new prompt scored — see its README for the cost guards (Postgres-as-cache, per-poll cap). |
 | `prompt-store-exporter/` | Writes raw prompt text from Loki into Postgres (`user_prompts` table) — per-developer prompt content, queryable by SQL. |
 | `prompt-intent-classifier/` | Training/eval for the ONNX intent model the intent-exporter loads. |
 | `prompt-explorer/` | Tooling to view real prod data locally over an SSM tunnel. |

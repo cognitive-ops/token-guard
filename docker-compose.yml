@@ -102,23 +102,25 @@ services:
     mem_limit: 1g
 
   # Prompt-quality exporter (scores prompt clarity/specificity/structure/robustness
-  # via an LLM judge — Anthropic or OpenAI). Costs real money per new prompt scored;
-  # see prompt-quality-exporter/README.md for the cost guards (disk cache, poll cap).
+  # via an LLM judge — Anthropic or OpenAI). Reads real prompt text from Postgres
+  # (user_prompts, populated by prompt-store-exporter) rather than Loki directly —
+  # Loki's retention is short and this needs to backfill/catch up over the full
+  # corpus. Costs real money per new prompt scored; see
+  # prompt-quality-exporter/README.md for the cost guards (Postgres-as-cache, poll cap).
   prompt-quality-exporter:
     build: ./prompt-quality-exporter
     container_name: prompt-quality-exporter
     environment:
-      - LOKI_URL=http://loki:3100
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-tokenguard}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tokenguard}
       - LOOKBACK_DAYS=7
-      - POLL_INTERVAL_SECONDS=3600
+      - POLL_INTERVAL_SECONDS=300
+      - FETCH_BATCH=1000
       - MAX_NEW_PER_POLL=300
-      - CACHE_FILE=/cache/quality_cache.jsonl
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-    volumes:
-      - prompt_quality_cache:/cache
     depends_on:
-      - loki
+      postgres:
+        condition: service_started
     restart: unless-stopped
     mem_limit: 512m
 
@@ -268,4 +270,3 @@ volumes:
   grafana_data:
   loki_data:
   postgres_data:
-  prompt_quality_cache:

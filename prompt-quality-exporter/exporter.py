@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
 """Prompt-quality exporter.
 
-Reads `user_prompt` events from Loki, scores each NEW developer prompt against
-the 4-dimension best-practice rubric (clarity / specificity / structure /
-robustness, see quality_rubric.py) via an LLM judge (Anthropic or OpenAI —
-whichever API key is present), and exposes per-dimension / tier / issue
-averages to Prometheus for the "Prompt Quality" Grafana dashboard.
+Reads real developer prompts from Postgres (`user_prompts`, populated by
+prompt-store-exporter from Loki), scores each NEW one against the 4-dimension
+best-practice rubric (clarity / specificity / structure / robustness, see
+quality_rubric.py) via an LLM judge (Anthropic or OpenAI — whichever API key
+is present), writes the result into `prompt_quality_scores`, and exposes
+per-dimension / tier / issue averages to Prometheus for the "Prompt Quality"
+Grafana dashboard.
 
 Unlike prompt-intent-exporter (a free local ONNX model), scoring here costs
 real money per call, so:
-  - results are cached to disk (CACHE_FILE, on a mounted volume) so a container
-    restart never re-scores prompts it already paid to score
-  - MAX_NEW_PER_POLL caps how many brand-new prompts get scored in one poll, so
-    a large backlog (e.g. first run) drains gradually instead of one cost spike
+  - `prompt_quality_scores` (Postgres, keyed by prompt_id) IS the cache — a
+    container restart never re-scores (re-pays for) a prompt already scored.
+    Non-real prompts (control/injected/empty) are recorded too, with NULL
+    scores, so the candidate query never re-considers them either.
+  - FETCH_BATCH caps how many unscored candidates are pulled from Postgres per
+    poll, and MAX_NEW_PER_POLL further caps how many of those actually get an
+    LLM call — a large backlog (e.g. first run) drains gradually instead of
+    one cost spike.
   - a running cost estimate is exposed as a gauge so spend is visible
+    (resets on restart — it's a live counter, not persisted).
 """
 
 import json
@@ -24,10 +31,10 @@ import threading
 import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timedelta, timezone
 
-import requests
+import psycopg2
 from prometheus_client import Gauge, start_http_server
+from psycopg2.extras import execute_values
 
 import quality_rubric as qr
 
@@ -36,18 +43,13 @@ logging.basicConfig(
 )
 log = logging.getLogger("prompt-quality-exporter")
 
-LOKI_URL = os.environ.get("LOKI_URL", "http://loki:3100")
-POLL_INTERVAL = int(os.environ.get("POLL_INTERVAL_SECONDS", "3600"))
-LOOKBACK_DAYS = int(os.environ.get("LOOKBACK_DAYS", "7"))  # smaller than intent's 29d: cost control
-PAGE_LIMIT = int(os.environ.get("PAGE_LIMIT", "5000"))
-LISTEN_PORT = int(os.environ.get("LISTEN_PORT", "9110"))
-CACHE_FILE = os.environ.get("CACHE_FILE", "/cache/quality_cache.jsonl")
-MAX_NEW_PER_POLL = int(os.environ.get("MAX_NEW_PER_POLL", "300"))  # cost guard
+DATABASE_URL = os.environ["DATABASE_URL"]
+POLL_INTERVAL = int(os.environ.get("POLL_INTERVAL_SECONDS", "300"))
+LOOKBACK_DAYS = int(os.environ.get("LOOKBACK_DAYS", "7"))  # window for the Prometheus aggregates
+FETCH_BATCH = int(os.environ.get("FETCH_BATCH", "1000"))  # unscored candidates pulled per poll
+MAX_NEW_PER_POLL = int(os.environ.get("MAX_NEW_PER_POLL", "300"))  # LLM calls per poll (cost guard)
 WORKERS = int(os.environ.get("WORKERS", "8"))
-LOKI_QUERY = os.environ.get("LOKI_QUERY", '{service_name="claude-code"} | event_name=`user_prompt`')
-WRITE_LOKI = os.environ.get("WRITE_LOKI", "1") == "1"
-PUSH_URL = LOKI_URL.rstrip("/") + "/loki/api/v1/push"
-S_QUALITY = "claude-code-quality"  # 1 entry/prompt -> {overall_score, tier, top_issue, dims, user_email}
+LISTEN_PORT = int(os.environ.get("LISTEN_PORT", "9110"))
 
 SCORER_MODEL = os.environ.get("SCORER_MODEL", "claude-sonnet-5")
 SCORER_OPENAI_MODEL = os.environ.get("SCORER_OPENAI_MODEL", "gpt-4o-mini")
@@ -55,6 +57,48 @@ SCORER_EFFORT = os.environ.get("SCORER_EFFORT", "low")
 # rough live cost readout; approximate, check current provider pricing pages
 PIN, POUT = 2.0 / 1e6, 10.0 / 1e6  # anthropic sonnet
 OPENAI_PIN, OPENAI_POUT = 0.15 / 1e6, 0.60 / 1e6  # gpt-4o-mini
+
+DDL = """
+CREATE TABLE IF NOT EXISTS prompt_quality_scores (
+    prompt_id        TEXT PRIMARY KEY,
+    user_email       TEXT,
+    event_timestamp  TIMESTAMPTZ,
+    category         TEXT NOT NULL,  -- real | control | injected | empty
+    clarity          SMALLINT,
+    specificity      SMALLINT,
+    structure        SMALLINT,
+    robustness       SMALLINT,
+    overall_score    SMALLINT,
+    tier             TEXT,
+    top_issue        TEXT,
+    scored_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_pqs_email_ts ON prompt_quality_scores (user_email, event_timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_pqs_ts ON prompt_quality_scores (event_timestamp DESC);
+"""
+
+CANDIDATES_SQL = """
+SELECT up.prompt_id, up.user_email, up.prompt_text, up.event_timestamp
+FROM user_prompts up
+LEFT JOIN prompt_quality_scores pqs ON pqs.prompt_id = up.prompt_id
+WHERE pqs.prompt_id IS NULL
+ORDER BY up.event_timestamp ASC
+LIMIT %s
+"""
+
+UPSERT_SQL = """
+INSERT INTO prompt_quality_scores (
+    prompt_id, user_email, event_timestamp, category,
+    clarity, specificity, structure, robustness, overall_score, tier, top_issue
+) VALUES %s
+ON CONFLICT (prompt_id) DO NOTHING
+"""
+
+AGGREGATE_SQL = """
+SELECT user_email, clarity, specificity, structure, robustness, overall_score, tier, top_issue
+FROM prompt_quality_scores
+WHERE category = 'real' AND event_timestamp > now() - (%s || ' days')::interval
+"""
 
 # --- metrics (claude_prompt_quality_* namespace, matching prompt-intent-exporter) ---
 OVERALL_AVG = Gauge(
@@ -179,161 +223,89 @@ def score(provider, client, prompt):
     return _score_anthropic(client, prompt) if provider == "anthropic" else _score_openai(client, prompt)
 
 
-# --- cache (disk-persisted so restarts never re-spend on prompts already scored) ---
-def load_cache(path):
-    cache = {}
-    if os.path.exists(path):
-        for line in open(path):
-            try:
-                r = json.loads(line)
-                cache[r["prompt_id"]] = r
-            except Exception:
-                pass
-    log.info("loaded %d cached quality scores from %s", len(cache), path)
-    return cache
+def ensure_schema(conn):
+    with conn.cursor() as cur:
+        cur.execute(DDL)
+    conn.commit()
 
 
-def append_cache(path, rec):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "a") as f:
-        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+def poll_once(conn, provider, client):
+    with conn.cursor() as cur:
+        cur.execute(CANDIDATES_SQL, (FETCH_BATCH,))
+        candidates = cur.fetchall()  # [(prompt_id, user_email, prompt_text, event_timestamp), ...]
 
-
-def loki_prompts(session, end_ns, start_ns):
-    nxt = start_ns
-    while True:
-        r = session.get(
-            f"{LOKI_URL}/loki/api/v1/query_range",
-            params={
-                "query": LOKI_QUERY,
-                "start": str(nxt),
-                "end": str(end_ns),
-                "limit": str(PAGE_LIMIT),
-                "direction": "forward",
-            },
-            timeout=290,
-        )
-        r.raise_for_status()
-        result = r.json().get("data", {}).get("result", [])
-        page_n, max_ts = 0, nxt
-        for stream in result:
-            labels = stream.get("stream", {})
-            for ts, _line in stream.get("values", []):
-                page_n += 1
-                ts = int(ts)
-                if ts > max_ts:
-                    max_ts = ts
-                yield ts, labels
-        if page_n < PAGE_LIMIT or max_ts <= nxt:
-            break
-        nxt = max_ts + 1
-
-
-PUSH_CHUNK = int(os.environ.get("PUSH_CHUNK", "1000"))
-
-
-def push_loki(session, values):
-    if not values:
-        return 0
-    values = sorted(values, key=lambda v: int(v[0]))
-    total = 0
-    for i in range(0, len(values), PUSH_CHUNK):
-        chunk = values[i : i + PUSH_CHUNK]
-        r = session.post(
-            PUSH_URL,
-            json={"streams": [{"stream": {"service_name": S_QUALITY}, "values": chunk}]},
-            timeout=60,
-        )
-        r.raise_for_status()
-        total += len(chunk)
-    return total
-
-
-def poll_once(session, provider, client, cache):
-    end = datetime.now(timezone.utc)
-    start = end - timedelta(days=LOOKBACK_DAYS)
-    end_ns, start_ns = int(end.timestamp() * 1e9), int(start.timestamp() * 1e9)
-
-    window = []  # (pid, ts, email) real prompts seen in this window
-    todo = []  # (pid, ts, email, text) not yet in cache
-    for ts, lb in loki_prompts(session, start_ns=start_ns, end_ns=end_ns):
-        text = (lb.get("prompt") or "").strip()
-        if categorize(text) != "real":
-            continue
-        pid = lb.get("prompt_id")
-        email = lb.get("user_email") or "unknown"
-        if not pid:
-            continue
-        window.append((pid, ts, email))
-        if pid not in cache and len(todo) < MAX_NEW_PER_POLL:
-            todo.append((pid, ts, email, text))
-
-    new_streams = []
+    to_score, rows = [], []
+    for pid, email, text, ts in candidates:
+        cat = categorize(text)
+        if cat == "real":
+            if len(to_score) < MAX_NEW_PER_POLL:
+                to_score.append((pid, email, text, ts))
+            # else: leave uncategorized for next poll (don't burn a "seen" row on a
+            # real prompt we didn't actually score, so it's retried)
+        else:
+            rows.append((pid, email, ts, cat, None, None, None, None, None, None, None))
 
     def job(item):
-        pid, ts, email, text = item
+        pid, email, text, ts = item
         for attempt in range(3):
             try:
                 sc = score(provider, client, text)
-                dims = {d: sc[d] for d in qr.DIMENSIONS}
+                dims = {d: int(sc[d]) for d in qr.DIMENSIONS}
                 overall = qr.overall_score(dims)
-                return {
-                    "prompt_id": pid,
-                    "ts": ts,
-                    "user_email": email,
-                    "scores": dims,
-                    "overall_score": overall,
-                    "tier": qr.tier(overall),
-                    "top_issue": sc["top_issue"],
-                }
+                return (
+                    pid,
+                    email,
+                    ts,
+                    "real",
+                    dims["clarity"],
+                    dims["specificity"],
+                    dims["structure"],
+                    dims["robustness"],
+                    overall,
+                    qr.tier(overall),
+                    sc["top_issue"],
+                )
             except Exception as e:
                 if attempt == 2:
                     log.warning("score failed for %s: %s", pid, str(e)[:200])
                     return None
 
-    if todo:
+    n_new = 0
+    if to_score:
         with ThreadPoolExecutor(max_workers=WORKERS) as ex:
-            for fut in as_completed([ex.submit(job, it) for it in todo]):
+            for fut in as_completed([ex.submit(job, it) for it in to_score]):
                 rec = fut.result()
-                if rec is None:
-                    continue
-                cache[rec["prompt_id"]] = rec
-                append_cache(CACHE_FILE, rec)
-                if WRITE_LOKI:
-                    meta = {
-                        "user_email": rec["user_email"],
-                        "overall_score": str(rec["overall_score"]),
-                        "tier": rec["tier"],
-                        "top_issue": rec["top_issue"],
-                        **{f"dim_{d}": v for d, v in rec["scores"].items()},
-                    }
-                    new_streams.append([str(rec["ts"]), rec["prompt_id"], meta])
+                if rec is not None:
+                    rows.append(rec)
+                    n_new += 1
 
-    if WRITE_LOKI and new_streams:
-        pushed_n = push_loki(session, new_streams)
-        log.info("wrote %d new quality scores back to Loki", pushed_n)
+    if rows:
+        with conn.cursor() as cur:
+            execute_values(cur, UPSERT_SQL, rows)
+        conn.commit()
 
-    # aggregate gauges over everything in the lookback window (cached + freshly scored)
-    dim_sum = defaultdict(lambda: defaultdict(float))  # dimension -> email -> sum
+    # aggregate gauges over the lookback window (reads back from Postgres — the
+    # source of truth — not an in-memory cache, so gauges are correct across restarts)
+    with conn.cursor() as cur:
+        cur.execute(AGGREGATE_SQL, (str(LOOKBACK_DAYS),))
+        agg_rows = cur.fetchall()
+
+    dim_sum = defaultdict(lambda: defaultdict(float))
     dim_n = defaultdict(lambda: defaultdict(int))
     overall_sum = defaultdict(float)
     overall_n = defaultdict(int)
     tier_count = defaultdict(lambda: defaultdict(int))
     issue_count = defaultdict(lambda: defaultdict(int))
-    total = 0
 
-    for pid, ts, email in window:
-        rec = cache.get(pid)
-        if not rec:
-            continue  # not yet scored (backlog beyond MAX_NEW_PER_POLL); picked up next poll
-        total += 1
-        overall_sum[email] += rec["overall_score"]
+    for email, clarity, specificity, structure, robustness, overall, tier, top_issue in agg_rows:
+        email = email or "unknown"
+        overall_sum[email] += overall
         overall_n[email] += 1
-        for d, v in rec["scores"].items():
-            dim_sum[d][email] += int(v)
+        for d, v in zip(qr.DIMENSIONS, (clarity, specificity, structure, robustness)):
+            dim_sum[d][email] += v
             dim_n[d][email] += 1
-        tier_count[rec["tier"]][email] += 1
-        issue_count[rec["top_issue"]][email] += 1
+        tier_count[tier][email] += 1
+        issue_count[top_issue][email] += 1
 
     OVERALL_AVG.clear()
     DIM_AVG.clear()
@@ -350,15 +322,17 @@ def poll_once(session, provider, client, cache):
     for iss, by in issue_count.items():
         for email, n in by.items():
             TOP_ISSUE_COUNT.labels(top_issue=iss, user_email=email).set(n)
-    PROC.set(total)
-    NEW_SCORED.set(len(new_streams))
+    PROC.set(len(agg_rows))
+    NEW_SCORED.set(n_new)
     COST_TOTAL.set(_cost_usd["total"])
     log.info(
-        "poll ok: %d real prompts in window, %d newly scored (~$%.4f this run), cache=%d",
-        total,
-        len(new_streams),
+        "poll ok: %d candidates fetched, %d newly scored (~$%.4f this run), %d real prompts in "
+        "%dd window",
+        len(candidates),
+        n_new,
         _cost_usd["total"],
-        len(cache),
+        len(agg_rows),
+        LOOKBACK_DAYS,
     )
 
 
@@ -366,35 +340,36 @@ def main():
     provider = resolve_provider()
     model = SCORER_MODEL if provider == "anthropic" else SCORER_OPENAI_MODEL
     log.info(
-        "prompt-quality-exporter on :%d (Loki=%s, lookback %dd, poll %ds, provider=%s model=%s, "
-        "max_new_per_poll=%d)",
+        "prompt-quality-exporter on :%d (Postgres source, lookback %dd, poll %ds, provider=%s "
+        "model=%s, fetch_batch=%d, max_new_per_poll=%d)",
         LISTEN_PORT,
-        LOKI_URL,
         LOOKBACK_DAYS,
         POLL_INTERVAL,
         provider,
         model,
+        FETCH_BATCH,
         MAX_NEW_PER_POLL,
     )
     start_http_server(LISTEN_PORT)
     client = get_client(provider)
-    cache = load_cache(CACHE_FILE)
 
-    session = requests.Session()
-    from requests.adapters import HTTPAdapter
-    from urllib3.util.retry import Retry
+    conn = psycopg2.connect(DATABASE_URL)
+    ensure_schema(conn)
 
-    session.mount(
-        "http://", HTTPAdapter(max_retries=Retry(total=5, connect=5, read=5, backoff_factor=1.5))
-    )
     while True:
         try:
-            poll_once(session, provider, client, cache)
+            if conn.closed:
+                conn = psycopg2.connect(DATABASE_URL)
+            poll_once(conn, provider, client)
             LAST_OK.set(time.time())
             ERRORS.set(0)
         except Exception as e:  # noqa: BLE001
             ERRORS.set(1)
             log.exception("poll failed: %s", e)
+            try:
+                conn.rollback()
+            except Exception:  # noqa: BLE001
+                pass
         time.sleep(POLL_INTERVAL)
 
 
