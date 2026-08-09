@@ -48,10 +48,27 @@ full model/accuracy/footprint comparison and the selective-prediction (abstain) 
   - *sequence-level — judged using the prior prompts of the session.
 - **Command** (regex, control prompts only): the slash-command name (`/plan`, `/verify`, `/clear`, …)
 
+## Prompt quality scoring (separate tool)
+
+`quality_rubric.py` + `score_quality.py` are a standalone sibling to the
+intent/behavior pipeline above — they don't feed the ONNX model. They grade a
+prompt against 4 best-practice dimensions (**clarity**, **specificity**,
+**structure**, **robustness**, 1-5 each) via an LLM judge (Anthropic or
+OpenAI — `SCORER_PROVIDER=auto` picks whichever API key is present) and are
+the batch/offline counterpart to **`../prompt-quality-exporter/`**, which runs
+the same rubric continuously in production (reading/writing Postgres instead
+of local JSONL, with cost guards). The two rubric copies are kept in sync by
+hand — see `prompt-quality-exporter/README.md`.
+
+```bash
+python src/score_quality.py probe      # verify prompt caching engages (~$0.01)
+python src/score_quality.py run        # score data/processed/labelable.jsonl -> data/processed/quality_scores.jsonl
+```
+
 ## Run
 
 ```bash
-set -a; . ../.env; set +a          # ANTHROPIC_API_KEY
+set -a; . ../.env; set +a          # ANTHROPIC_API_KEY (or OPENAI_API_KEY, for score_quality.py)
 python src/extract_prompts.py       # needs local Loki at :3100 (online backup restored)
 python src/label_batch.py submit    # ~$28 on Sonnet 4.6 for ~9.7k prompts
 python src/label_batch.py fetch     # after the batch ends

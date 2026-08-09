@@ -107,7 +107,11 @@ pre-compute counts into Prometheus gauges, read in <1 ms:
 - `claude_prompt_{intent,behavior,command}_count{…,user_email}` (prompt-intent-exporter)
 - `claude_prompt_quality_{overall_avg,dimension_avg,tier_count,top_issue_count}{…,user_email}`
   (prompt-quality-exporter) — LLM-judged, so this snapshot only grows on new prompts up to
-  `MAX_NEW_PER_POLL`/poll, not the full lookback window every time (cost control)
+  `MAX_NEW_PER_POLL`/poll, not the full lookback window every time (cost control). Backed by
+  a Postgres table (`prompt_quality_scores`, not just Prometheus gauges) — see
+  `prompt-quality-exporter/README.md` for the schema; the "worst-scoring prompts" Grafana
+  panel reads that table directly (joined against `user_prompts` for the prompt text),
+  since Prometheus gauges are aggregates only and can't show individual rows.
 
 These gauges are a **fixed ~30-day snapshot**, so they don't honor an arbitrary time
 picker. Both frontends therefore use a **hybrid**: the fast Prometheus gauge for ~30-day
@@ -140,3 +144,16 @@ recording rules; that's the path to making every panel snapshot-fast.
 - `user_prompts` (Postgres) has no retention/cleanup job — it grows unbounded and holds
   raw, unredacted prompt text. Restrict DB access; add a `DELETE ... WHERE event_timestamp
   < ...` cron if you need retention.
+- **Prometheus doesn't hot-reload `prometheus.yml`** from the bind mount — adding/editing a
+  scrape job needs `docker compose up -d --force-recreate prometheus` (a plain `restart`
+  was observed to NOT pick up a newly-added job in local dev). Confirm at
+  `http://localhost:9090/targets`.
+- **Grafana's dashboard file-provisioner can silently go stale** — editing a
+  `grafana/dashboards/*.json` file doesn't reliably reach the running container even though
+  `updateIntervalSeconds: 10` should re-scan it (observed in local dev: the deployed
+  dashboard kept serving an old panel definition after several file edits). If a dashboard
+  shows stale panels after a file change, push the corrected JSON directly:
+  `POST /api/dashboards/db` with `{"dashboard": <the JSON>, "folderUid": <target folder>,
+  "overwrite": true}` (Grafana admin basic auth, `DASHBOARD_USERNAME`/`DASHBOARD_PASSWORD`
+  from `.env`) — bypasses the file watcher and updates immediately. Find a folder's uid via
+  `GET /api/folders`.

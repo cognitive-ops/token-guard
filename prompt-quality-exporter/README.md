@@ -9,7 +9,7 @@ Prometheus for the **Prompt Quality** Grafana dashboard.
 flowchart LR
     PG1[("Postgres<br/>user_prompts")] --> EX["prompt-quality-exporter"]
     EX --> F{"categorize"}
-    F -- "control / injected" --> SKIP["write NULL-score row<br/>(marks it seen)"]
+    F -- "control / injected /<br/>pasted_output" --> SKIP["write NULL-score row<br/>(marks it seen)"]
     F -- real prompt --> LLM["LLM judge<br/>(Anthropic or OpenAI)"]
     LLM --> PG2[("Postgres<br/>prompt_quality_scores")]
     SKIP --> PG2
@@ -30,8 +30,8 @@ paid LLM per prompt, so cost is actively managed:
 
 - **`prompt_quality_scores` (Postgres) IS the cache** — a container restart
   never re-scores (re-pays for) a prompt already scored. Non-real prompts
-  (control/injected/empty) get a row too, with `NULL` scores, so the candidate
-  query never reconsiders them either.
+  (control/injected/empty/pasted_output) get a row too, with `NULL` scores, so
+  the candidate query never reconsiders them either.
 - **`FETCH_BATCH`** caps how many unscored candidates are pulled from Postgres
   per poll; **`MAX_NEW_PER_POLL`** further caps how many of those get an
   actual LLM call — a large backlog (e.g. first run) drains gradually instead
@@ -66,7 +66,7 @@ CREATE TABLE prompt_quality_scores (
     prompt_id        TEXT PRIMARY KEY,
     user_email       TEXT,
     event_timestamp  TIMESTAMPTZ,
-    category         TEXT NOT NULL,  -- real | control | injected | empty
+    category         TEXT NOT NULL,  -- real | control | injected | empty | pasted_output
     clarity          SMALLINT,       -- NULL for non-real prompts
     specificity      SMALLINT,
     structure        SMALLINT,
@@ -74,13 +74,21 @@ CREATE TABLE prompt_quality_scores (
     overall_score    SMALLINT,
     tier             TEXT,
     top_issue        TEXT,
+    suggestion       TEXT,           -- one-line rewrite tip from the judge; empty if top_issue is "none"
     scored_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ```
 
+`pasted_output` (added after real usage showed false positives): multi-line
+text that looks like pasted terminal/log output — a log-level marker
+(`INFO`/`ERROR`/…), a Prometheus exposition line (`# HELP`/`# TYPE`), or a
+piped shell command — rather than an actual developer ask. Heuristic, not
+exhaustive; see `categorize()` in `exporter.py`.
+
 The "worst-scoring prompts" drilldown panel on the Grafana dashboard is a
 Postgres SQL panel that joins this against `user_prompts` for the actual
-prompt text — see `grafana/dashboards/prompt-quality-dashboard.json`.
+prompt text and the `suggestion` — see
+`grafana/dashboards/prompt-quality-dashboard.json`.
 
 ## Config (env)
 
