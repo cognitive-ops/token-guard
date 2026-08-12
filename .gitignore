@@ -15,3 +15,10 @@ grafana/dashboards/zzz-*.json
 grafana/provisioning/datasources/zzz-*.yaml
 leak-review/leak-prompt.csv
 leak-review/leak-tp.csv
+
+# terraform
+iac/.terraform/
+iac/*.tfstate
+iac/*.tfstate.*
+iac/terraform.tfvars
+iac/*.tfplan

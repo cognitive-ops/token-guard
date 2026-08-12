@@ -1,0 +1,16 @@
+# Copy to terraform.tfvars and adjust.
+
+aws_region  = "us-east-1"
+aws_profile = "your-aws-profile"
+
+instance_type        = "t4g.large"
+root_volume_size_gb  = 80
+assign_eip           = true
+
+# Lock this down once you know your IP/VPN range. Default is open internet,
+# matching the current box (no reverse proxy/TLS on it today).
+allowed_cidr_blocks = ["0.0.0.0/0"]
+
+# Leave null for SSM-only access (no port 22 opened).
+# ssh_key_name            = "my-keypair"
+# ssh_allowed_cidr_blocks = ["203.0.113.4/32"]
